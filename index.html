@@ -1170,8 +1170,27 @@ function liberarParaEsteSorteo(k){
       }
       delete B[k];
     }
-    // Marcar como no confirmado pero conservar en ABON
-    if(ABON[k]){ABON[k].confirmado=false;ABON[k].liberado=true;}
+    // Guardar datos del abonado para restaurar en próximo sorteo
+    // y eliminarlo de ABON para que el número quede completamente libre
+    if(ABON[k]){
+      const abpaqId=ABON[k].abpaqId;
+      const titular=ABON[k].titular;
+      // Guardar en el paquete que está liberado para este sorteo
+      if(abpaqId){
+        const abpaq=ABPAQ.find(p=>p.id===abpaqId);
+        if(abpaq){
+          if(!abpaq.liberados)abpaq.liberados=[];
+          abpaq.liberados.push({k,titular});
+        }
+      } else {
+        // Individual: guardar en lista de liberados
+        if(!window._liberadosTemp)window._liberadosTemp={};
+        // Usar un array global en CFG para persistir
+        if(!CFG.liberados)CFG.liberados=[];
+        CFG.liberados.push({k,titular});
+      }
+      delete ABON[k];
+    }
     saveAndSync();renderAbonados();renderMapa();
   });
 }
@@ -1198,17 +1217,17 @@ function renderAbonados(){
           </div>
         </div>
         <div style="padding:.6rem 1rem;display:flex;flex-wrap:wrap;gap:3px;background:var(--bg)">
-          ${abpaq.nums.map(k=>{
+          ${[...abpaq.nums,...(abpaq.liberados||[]).map(l=>l.k)].map(k=>{
             const conf=ABON[k]?.confirmado&&B[k];
-            const liberado=ABON[k]?.liberado&&!B[k];
-            return`<div class="vv-num ${conf?'pago':liberado?'':'vv-num'}"
-              style="${conf?'':liberado?'background:var(--surface2);border-color:var(--border);color:var(--text3);opacity:.6':'background:var(--gold-bg);border-color:#c8a830;color:var(--gold)'}"
+            const liberado=(abpaq.liberados||[]).some(l=>l.k===k);
+            return`<div class="vv-num"
+              style="${conf?'background:var(--accent-bg);border-color:#aacab6;color:var(--accent)':liberado?'background:var(--surface2);border-color:var(--border);color:var(--text3);opacity:.5':'background:var(--gold-bg);border-color:#c8a830;color:var(--gold)'}"
               title="${conf?'Confirmado en RC&R':liberado?'Liberado para este sorteo':'Pendiente de confirmar'}">${k}
             </div>`;
           }).join('')}
         </div>
-        ${algunoLiberable?`<div style="padding:.5rem 1rem;background:var(--bg);border-top:1px solid var(--border);display:flex;gap:4px;flex-wrap:wrap">
-          ${abpaq.nums.filter(k=>!ABON[k]?.liberado&&!B[k]).map(k=>`
+        ${abpaq.nums.filter(k=>ABON[k]&&!ABON[k]?.confirmado).length?`<div style="padding:.5rem 1rem;background:var(--bg);border-top:1px solid var(--border);display:flex;gap:4px;flex-wrap:wrap">
+          ${abpaq.nums.filter(k=>ABON[k]&&!ABON[k]?.confirmado).map(k=>`
             <button class="btn btn-sm" style="font-size:10px;color:var(--amber);border-color:#d4a870" onclick="liberarParaEsteSorteo('${k}')">Liberar ${k}</button>`).join('')}
         </div>`:''}
       </div>`;
@@ -1833,7 +1852,22 @@ function guardarPrecio(){const p=parseFloat(document.getElementById('s-precio').
 function nuevoSorteo(){
   showModal('⚠ Iniciar nuevo sorteo','Esto borrará todas las boletas y abonos. Vendedores y números abonados permanecerán siempre. ¿Continuar?',()=>{
     showModal('Confirmar nuevo sorteo','Esta acción no se puede deshacer.',()=>{
-      Object.keys(ABON).forEach(k=>{ABON[k].confirmado=false;ABON[k].noConfirmar=false;ABON[k].liberado=false;});
+      // Restaurar números liberados de paquetes abonados
+ABPAQ.forEach(abpaq=>{
+  if(abpaq.liberados&&abpaq.liberados.length){
+    abpaq.liberados.forEach(({k,titular})=>{
+      ABON[k]={titular,abpaqId:abpaq.id,confirmado:false};
+      if(!abpaq.nums.includes(k))abpaq.nums.push(k);
+    });
+    delete abpaq.liberados;
+  }
+});
+// Restaurar individuales liberados
+if(CFG.liberados&&CFG.liberados.length){
+  CFG.liberados.forEach(({k,titular})=>{ABON[k]={titular,confirmado:false};});
+  CFG.liberados=[];
+}
+Object.keys(ABON).forEach(k=>{ABON[k].confirmado=false;ABON[k].noConfirmar=false;});
       B={};PAQ={};PAQ=[];ABV={};ABI={};ABP={};CFG.ganador=null;
       saveAndSync();refreshSelects();renderDash();
       alert('Nuevo sorteo iniciado. Vendedores y números abonados conservados.');

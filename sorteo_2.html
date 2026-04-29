@@ -1,0 +1,2194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Sorteo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f5f3ee; --surface:#fff; --surface2:#edeae3; --border:#d8d3c8; --border2:#c8c2b5;
+  --text:#1a1814; --text2:#6b6560; --text3:#9e9890;
+  --accent:#2d5a3d; --accent-bg:#e8f0eb;
+  --amber:#7a4f1a; --amber-bg:#f5ead8;
+  --blue:#1a3d6b; --blue-bg:#dde8f5;
+  --red:#6b1a1a; --red-bg:#f5dddd;
+  --purple:#3d1a6b; --purple-bg:#eaddf5;
+  --teal:#1a5a58; --teal-bg:#d8f0ef;
+  --gold:#7a5c00; --gold-bg:#fdf3cc;
+  --r:6px; --rl:10px;
+  --font:'Syne',sans-serif; --mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:var(--font);color:var(--text);min-height:100vh}
+
+.header{background:var(--text);color:var(--bg);padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.header-title{font-size:17px;font-weight:700;letter-spacing:.04em}
+.header-sub{font-size:11px;color:#9e9890;font-family:var(--mono);margin-top:2px}
+.hbadge{background:var(--accent);color:#fff;font-size:11px;font-family:var(--mono);padding:4px 12px;border-radius:999px}
+.header-precio{font-size:12px;font-family:var(--mono);color:#c8c2b5}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.admin-btn{padding:5px 12px;border:1px solid #4a4a40;border-radius:var(--r);font-size:11px;font-family:var(--mono);cursor:pointer;background:transparent;color:#9e9890;transition:all .15s}
+.admin-btn:hover{border-color:#9e9890;color:var(--bg)}
+.admin-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.tabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;overflow-x:auto}
+.tab{padding:11px 14px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--text)} .tab.active{color:var(--text);border-bottom:2px solid var(--text)}
+.tab.admin-only{display:none}
+.tab.admin-only.visible{display:block}
+
+.main{padding:1.25rem 1.5rem;max-width:1140px;margin:0 auto}
+.section{display:none} .section.active{display:block}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1.1rem 1.25rem;margin-bottom:1rem}
+.ctitle{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:.9rem}
+
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1.5rem}
+.met{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1rem}
+.ml{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.mv{font-size:20px;font-weight:700;font-family:var(--mono);line-height:1}
+.ms{font-size:11px;color:var(--text3);margin-top:4px;font-family:var(--mono)}
+.met.green{border-color:#aacab6;background:var(--accent-bg)} .met.green .mv{color:var(--accent)}
+.met.amber{border-color:#d4a870;background:var(--amber-bg)} .met.amber .mv{color:var(--amber)}
+.met.blue{border-color:#8aaad0;background:var(--blue-bg)} .met.blue .mv{color:var(--blue)}
+.met.teal{border-color:#8acac8;background:var(--teal-bg)} .met.teal .mv{color:var(--teal)}
+.met.gold{border-color:#c8a830;background:var(--gold-bg)} .met.gold .mv{color:var(--gold)}
+
+.fr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+input,select,textarea{border:1px solid var(--border2);border-radius:var(--r);font-size:13px;font-family:var(--font);background:var(--bg);color:var(--text);transition:border-color .15s}
+input,select{height:34px;padding:0 10px}
+textarea{padding:8px 10px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--text)}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+.lbl{font-size:12px;color:var(--text2);white-space:nowrap}
+
+.btn{height:34px;padding:0 14px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;font-family:var(--font);font-weight:500;cursor:pointer;background:var(--surface);color:var(--text);transition:all .12s;white-space:nowrap}
+.btn:hover{background:var(--surface2);border-color:var(--text)}
+.btn-p{background:var(--text);color:var(--bg);border-color:var(--text)} .btn-p:hover{opacity:.82}
+.btn-g{background:var(--accent);color:#fff;border-color:var(--accent)} .btn-g:hover{opacity:.85}
+.btn-t{background:var(--teal);color:#fff;border-color:var(--teal)} .btn-t:hover{opacity:.85}
+.btn-d{color:var(--red);border-color:#e0b0b0} .btn-d:hover{background:var(--red-bg)}
+.btn-gold{background:var(--gold);color:#fff;border-color:var(--gold)} .btn-gold:hover{opacity:.85}
+.btn-warn{background:var(--red);color:#fff;border-color:var(--red)} .btn-warn:hover{opacity:.85}
+.btn-sm{height:26px;padding:0 9px;font-size:11px}
+
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;font-family:var(--mono)}
+.bg{background:var(--accent-bg);color:var(--accent);border:1px solid #aacab6}
+.ba{background:var(--amber-bg);color:var(--amber);border:1px solid #d4a870}
+.bb{background:var(--blue-bg);color:var(--blue);border:1px solid #8aaad0}
+.bp{background:var(--purple-bg);color:var(--purple);border:1px solid #b8a0d0}
+.bt{background:var(--teal-bg);color:var(--teal);border:1px solid #8acac8}
+.bgold{background:var(--gold-bg);color:var(--gold);border:1px solid #c8a830}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg)}
+.empty{text-align:center;padding:2rem;color:var(--text3);font-size:13px}
+.neto-cell{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--accent)}
+.neto-sub{font-size:10px;color:var(--text3);font-family:var(--mono);display:block;margin-top:1px}
+
+/* VENDOR SEARCH DROPDOWN */
+.vs-wrap{position:relative;display:inline-block;min-width:170px}
+.vs-input{width:100%;height:34px;padding:0 10px;cursor:pointer}
+.vs-dropdown{position:absolute;top:36px;left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);z-index:50;max-height:200px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.vs-dropdown.open{display:block}
+.vs-option{padding:8px 10px;font-size:13px;cursor:pointer;transition:background .1s}
+.vs-option:hover{background:var(--surface2)}
+.vs-option.selected{background:var(--accent-bg);color:var(--accent);font-weight:600}
+.vs-none{padding:8px 10px;font-size:12px;color:var(--text3)}
+
+/* MAPA */
+.mode-bar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.mode-btn{padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--text2);transition:all .12s}
+.mode-btn:hover{background:var(--surface2)}
+.mode-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.mode-btn.m-del.active{background:var(--red);color:#fff;border-color:var(--red)}
+.mode-btn.m-gold.active{background:var(--gold);color:#fff;border-color:var(--gold)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)}
+.leg-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+.hint{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:8px}
+.nums-grid{display:grid;grid-template-columns:repeat(25,1fr);gap:3px}
+.nc{text-align:center;padding:4px 1px;font-size:10px;font-family:var(--mono);border-radius:4px;border:1px solid var(--border);cursor:pointer;transition:all .08s;background:var(--surface);color:var(--text3);user-select:none;line-height:1.2}
+.nc:hover{border-color:var(--text);color:var(--text)}
+.nc.v-pend{background:var(--amber-bg);border-color:#d4a870;color:var(--amber)}
+.nc.p-pend{background:var(--blue-bg);border-color:#8aaad0;color:var(--blue)}
+.nc.i-pend{background:var(--teal-bg);border-color:#8acac8;color:var(--teal)}
+.nc.pagado{background:var(--accent-bg);border-color:#aacab6;color:var(--accent)}
+.nc.abonado{background:var(--gold-bg);border-color:#c8a830;color:var(--gold);font-weight:700}
+.nc.sel{background:var(--purple-bg);border-color:#b8a0d0;color:var(--purple);font-weight:500}
+.nc.sel-del{background:var(--red-bg);border-color:#e0a0a0;color:var(--red)}
+.nc.sel-gold{background:var(--gold-bg);border-color:#c8a830;color:var(--gold)}
+.nc.dim{opacity:.12}
+.sel-bar{display:none;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;padding:9px 14px;border-radius:var(--r);font-size:13px;background:var(--purple-bg);border:1px solid #b8a0d0}
+
+/* BUSCADOR NÚMERO MÓVIL */
+.num-search-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1rem 1.25rem;margin-bottom:1rem}
+.num-result{margin-top:10px;padding:10px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);font-size:13px;display:none}
+.num-result.visible{display:block}
+
+/* VENDEDORES */
+.v-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:1rem;overflow:hidden}
+.v-card-header{padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.v-card-nums{padding:.7rem 1.25rem;border-top:1px solid var(--border);background:var(--bg);display:flex;flex-wrap:wrap;gap:3px}
+.vv-num{display:inline-flex;align-items:center;justify-content:center;width:40px;height:30px;font-family:var(--mono);font-size:11px;font-weight:500;border-radius:4px;border:1px solid}
+.vv-num.pago{background:var(--accent-bg);border-color:#aacab6;color:var(--accent)}
+.vv-num.pend{background:var(--amber-bg);border-color:#d4a870;color:var(--amber)}
+
+/* ABONOS */
+.abono-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;margin-bottom:.75rem}
+.abono-header{padding:.85rem 1.25rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;cursor:pointer;transition:background .1s}
+.abono-header:hover{background:var(--bg)}
+.abono-body{border-top:1px solid var(--border);padding:1rem 1.25rem;display:none}
+.abono-body.open{display:block}
+.saldo-box{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:1rem}
+.saldo-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.6rem .9rem}
+.saldo-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.saldo-val{font-size:15px;font-weight:700;font-family:var(--mono)}
+.abono-list{margin-bottom:.75rem;max-height:160px;overflow-y:auto}
+.abono-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.abono-row:last-child{border-bottom:none}
+.abono-fecha{font-size:11px;color:var(--text3);font-family:var(--mono)}
+
+.num-input-area{width:100%;font-family:var(--mono);font-size:13px}
+.num-preview{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;min-height:22px}
+.prev-tag{padding:2px 7px;border-radius:4px;font-size:11px;font-family:var(--mono);font-weight:500;border:1px solid}
+.prev-ok{background:var(--purple-bg);color:var(--purple);border-color:#b8a0d0}
+.prev-dup{background:var(--amber-bg);color:var(--amber);border-color:#d4a870}
+.prev-inv{background:var(--red-bg);color:var(--red);border-color:#e0a0a0}
+.prev-ab{background:var(--gold-bg);color:var(--gold);border-color:#c8a830}
+
+.prog-wrap{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-top:4px}
+.prog-fill{height:100%;border-radius:3px;transition:width .4s}
+.saldo-ok{color:var(--accent);font-weight:700;font-family:var(--mono)}
+.saldo-pend{color:var(--amber);font-weight:700;font-family:var(--mono)}
+.ptitle{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;margin-top:6px}
+.ab-item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px}
+.ab-item:last-child{border-bottom:none}
+.ab-item:hover{background:var(--bg)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,24,20,.6);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1.5rem;width:480px;max-width:96vw;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:15px;font-weight:700;margin-bottom:.75rem}
+.modal p{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:.5rem}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem}
+.modal-field{margin-bottom:.75rem}
+.modal-field label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:600}
+.modal-field input,.modal-field select,.modal-field textarea{width:100%}
+
+/* LOCK OVERLAY para modo lectura */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 20px;border-radius:999px;font-size:13px;font-family:var(--mono);font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.readonly-badge{display:none;position:fixed;bottom:16px;right:16px;background:var(--text);color:var(--bg);font-size:11px;font-family:var(--mono);padding:6px 12px;border-radius:999px;z-index:100;opacity:.7}
+.readonly-badge.visible{display:block}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.winner-box{background:var(--text);color:var(--bg);border-radius:var(--rl);padding:1.5rem;text-align:center;margin-bottom:1rem}
+.winner-number{font-size:60px;font-weight:700;font-family:var(--mono);line-height:1;margin:.5rem 0}
+.winner-name{font-size:20px;font-weight:600;margin-top:.5rem}
+.winner-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.55}
+.subtab-row{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap}
+.subtab{padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--text2);transition:all .12s}
+.subtab:hover{background:var(--surface2)} .subtab.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.sorteo-box{background:var(--red-bg);border:1px solid #e0b0b0;border-radius:var(--rl);padding:1rem 1.25rem;margin-top:1rem}
+.search-bar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.search-bar input{flex:1;min-width:160px}
+
+@media(max-width:700px){.two-col{grid-template-columns:1fr}.nums-grid{grid-template-columns:repeat(20,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div>
+      <div class="header-title">SISTEMA DE SORTEO</div>
+      <div class="header-sub">1 000 números · 000–999</div>
+    </div>
+    <div class="hbadge" id="badge-nombre">Sorteo</div>
+  </div>
+  <div class="header-right">
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+      <div class="header-precio" id="header-precio">Precio: —</div>
+      <div id="sync-status" style="font-size:10px;font-family:var(--mono);color:var(--text3)">Iniciando...</div>
+    </div>
+    <button class="admin-btn" id="admin-toggle-btn" onclick="toggleAdmin()">🔒 Administrador</button>
+  </div>
+</div>
+
+<div class="tabs-wrap" id="tabs-wrap">
+  <button class="tab active" onclick="goTab('dashboard',this)">Tablero principal</button>
+  <button class="tab" onclick="goTab('mapa',this)">Lista numérica</button>
+  <button class="tab" onclick="goTab('vendedores',this)">Vendedores</button>
+  <button class="tab admin-only" onclick="goTab('directas',this)">Vendidas RC&amp;R</button>
+  <button class="tab" onclick="goTab('dinero',this)">Dinero por recoger</button>
+  <button class="tab" onclick="goTab('abonos-rapido',this)">Registrar abono</button>
+  <button class="tab admin-only" onclick="goTab('abonos',this)">Abonos</button>
+  <button class="tab admin-only" onclick="goTab('historial',this)">Historial</button>
+  <button class="tab admin-only" onclick="goTab('abonados',this)">Números abonados</button>
+  <button class="tab admin-only" onclick="goTab('admon',this)">ADMON</button>
+</div>
+
+<div class="readonly-badge" id="readonly-badge">👁 Solo lectura</div>
+
+<div class="main">
+
+<!-- ══════════════════════ TABLERO PRINCIPAL -->
+<div id="tab-dashboard" class="section active">
+  <div class="mg" id="metrics"></div>
+  <div class="card" style="margin-top:.5rem"><div id="dash-e"></div></div>
+</div>
+
+<!-- ══════════════════════ LISTA NUMÉRICA -->
+<div id="tab-mapa" class="section">
+  <!-- Buscador de número -->
+  <div class="num-search-box">
+    <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Buscar número</div>
+    <div class="fr">
+      <input id="num-buscar" placeholder="Escribe un número (ej: 057)" maxlength="3" style="font-family:var(--mono);font-size:16px;text-align:center;width:130px" oninput="buscarNumero()">
+      <button class="btn" onclick="limpiarBusqueda()">Limpiar</button>
+      <button class="btn btn-p" onclick="toggleNumerosLibres()" id="btn-libres">Ver números libres</button>
+    </div>
+    <div class="num-result" id="num-result"></div>
+    <div id="panel-libres" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px" id="libres-titulo"></div>
+      <div id="libres-lista" style="display:flex;flex-wrap:wrap;gap:3px"></div>
+    </div>
+  </div>
+  <!-- Mapa (solo visible en modo admin) -->
+  <div id="mapa-admin-section">
+    <div class="card">
+      <div style="margin-bottom:10px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Modo de interacción</div>
+        <div class="mode-bar">
+          <button class="mode-btn active" id="mode-asig" onclick="setMode('asignar')">Asignar</button>
+          <button class="mode-btn m-del" id="mode-del" onclick="setMode('desasignar')">Desasignar</button>
+          <button class="mode-btn" id="mode-reasig" onclick="setMode('reasignar')">Reasignar</button>
+        <button class="mode-btn" id="mode-pago" onclick="setMode('pago')">Cambiar pago</button>
+          <button class="mode-btn m-gold" id="mode-gold" onclick="setMode('abonado')">Marcar abonado</button>
+        </div>
+      </div>
+      <div id="toolbar-asig" style="padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)">
+        <div class="fr" style="margin-bottom:8px">
+          <select id="mapa-filtro" onchange="renderMapa()" style="min-width:175px"><option value="">Ver todos</option></select>
+        </div>
+        <div class="fr" style="margin-bottom:8px">
+          <select id="mapa-asig-tipo" onchange="toggleMapaAsigTipo()" style="width:150px">
+            <option value="vendedor">→ Vendedor</option>
+            <option value="individual">→ Individual</option>
+            <option value="paquete">→ Paquete</option>
+          </select>
+          <div class="vs-wrap" id="vs-mapa-wrap">
+            <input class="vs-input" id="vs-mapa-input" placeholder="Buscar vendedor..." autocomplete="off" oninput="vsFilter('mapa')" onfocus="vsOpen('mapa')" onblur="setTimeout(()=>vsClose('mapa'),150)">
+            <div class="vs-dropdown" id="vs-mapa-drop"></div>
+          </div>
+          <input id="mapa-asig-cliente" placeholder="Nombre cliente" style="display:none;min-width:130px">
+          <input id="mapa-asig-desc" type="number" min="0" placeholder="Descuento €" style="display:none;width:110px">
+          <button class="btn btn-g" onclick="confirmarAsigMapa()">Asignar</button>
+          <button class="btn" onclick="clearSel()">Limpiar</button>
+        </div>
+        <!-- Asignación por texto -->
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Asignación en bloque por texto</div>
+          <div class="fr" style="align-items:flex-start">
+            <div style="flex:1;min-width:200px">
+              <textarea id="texto-nums" class="num-input-area" rows="3" placeholder="Números separados por comas, espacios o saltos&#10;Ej: 057, 159, 267, 845, 952" oninput="previewTexto()" style="width:100%"></textarea>
+              <div class="num-preview" id="texto-preview"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;min-width:160px">
+              <select id="texto-tipo" onchange="toggleTextoTipo()" style="width:100%">
+                <option value="vendedor">→ Vendedor</option>
+                <option value="individual">→ Individual</option>
+                <option value="paquete">→ Paquete</option>
+              </select>
+              <div class="vs-wrap" id="vs-texto-wrap" style="width:100%">
+                <input class="vs-input" id="vs-texto-input" placeholder="Buscar vendedor..." autocomplete="off" oninput="vsFilter('texto')" onfocus="vsOpen('texto')" onblur="setTimeout(()=>vsClose('texto'),150)" style="width:100%">
+                <div class="vs-dropdown" id="vs-texto-drop"></div>
+              </div>
+              <input id="texto-cliente" placeholder="Nombre cliente" style="display:none;width:100%">
+              <input id="texto-desc" type="number" min="0" placeholder="Descuento €" style="display:none;width:100%">
+              <button class="btn btn-p" onclick="confirmarTextoAsig()" style="width:100%">Asignar en bloque</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="toolbar-del" style="display:none;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)">
+        <p style="font-size:12px;color:var(--red);font-weight:600;margin-bottom:6px">Modo desasignar — clic en números asignados. Los abonados no se pueden desasignar aquí.</p>
+        <div class="fr">
+          <button class="btn btn-warn" onclick="desasignarSel()">Desasignar (<span id="del-count">0</span>)</button>
+          <button class="btn" onclick="clearSel()">Cancelar</button>
+        </div>
+      </div>
+      <div id="toolbar-reasig" style="display:none;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)">
+        <p style="font-size:12px;color:var(--blue);font-weight:600;margin-bottom:6px">Modo reasignar — selecciona números de un vendedor para moverlos a otro.</p>
+        <div class="fr">
+          <div class="vs-wrap" id="vs-reasig-wrap" style="min-width:180px">
+            <input class="vs-input" id="vs-reasig-input" placeholder="Reasignar a vendedor..." autocomplete="off" oninput="vsFilter(&apos;reasig&apos;)" onfocus="vsOpen(&apos;reasig&apos;)" onblur="setTimeout(()=>vsClose(&apos;reasig&apos;),150)">
+            <div class="vs-dropdown" id="vs-reasig-drop"></div>
+          </div>
+          <button class="btn btn-p" onclick="reasignarSel()">Reasignar (<span id="reasig-count">0</span>)</button>
+          <button class="btn" onclick="clearSel()">Cancelar</button>
+        </div>
+      </div>
+      <div id="toolbar-pago" style="display:none;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)">
+        <p style="font-size:12px;color:var(--text2)">Modo pago — clic en cualquier número asignado para cambiar su estado.</p>
+      </div>
+      <div id="toolbar-gold" style="display:none;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)">
+        <p style="font-size:12px;color:var(--gold);font-weight:600;margin-bottom:6px">Modo abonado — selecciona números libres para marcarlos como abonados permanentes.</p>
+        <div class="fr">
+          <button class="btn btn-gold" onclick="confirmarAbonados()">Marcar abonados (<span id="gold-count">0</span>)</button>
+          <button class="btn" onclick="clearSel()">Cancelar</button>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="leg"><div class="leg-dot" style="background:var(--gold-bg);border:1px solid #c8a830"></div>Abonado</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--accent-bg);border:1px solid #aacab6"></div>Pagado</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--amber-bg);border:1px solid #d4a870"></div>Vendedor · pendiente</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--blue-bg);border:1px solid #8aaad0"></div>Paquete · pendiente</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--teal-bg);border:1px solid #8acac8"></div>Individual · pendiente</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--purple-bg);border:1px solid #b8a0d0"></div>Seleccionado</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--surface);border:1px solid var(--border)"></div>Libre</div>
+      </div>
+      <p class="hint">Hover sobre un número para ver a quién pertenece</p>
+      <div class="nums-grid" id="mapa"></div>
+      <div class="sel-bar" id="sel-bar">
+        <span style="font-weight:700;color:var(--purple)" id="sel-count-txt"></span>
+        <span style="font-size:12px;color:var(--purple)">números seleccionados</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ VENDEDORES -->
+<div id="tab-vendedores" class="section">
+  <div class="fr" style="margin-bottom:1rem;gap:8px">
+    <input id="v-buscar" placeholder="Buscar vendedor..." oninput="renderVendedores()" style="flex:1;min-width:160px">
+    <button class="btn btn-p admin-control" onclick="toggleFormVendedor()" id="btn-nuevo-v">+ Nuevo vendedor</button>
+  </div>
+  <div id="form-vendedor" style="display:none" class="admin-control">
+    <div class="card">
+      <div class="ctitle">Registrar vendedor</div>
+      <div class="fr">
+        <input id="v-nom" placeholder="Nombre completo" style="flex:2;min-width:130px">
+        <input id="v-tel" placeholder="Teléfono" style="flex:1;min-width:100px">
+        <input id="v-com" type="number" min="0" max="100" value="20" style="width:60px">
+        <span class="lbl">% comisión</span>
+        <button class="btn btn-p" onclick="addV()">Agregar</button>
+        <button class="btn" onclick="toggleFormVendedor()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+  <div id="vendedores-lista"></div>
+</div>
+
+<!-- ══════════════════════ VENDIDAS RC&R -->
+<div id="tab-directas" class="section">
+  <div class="card">
+    <div class="ctitle">Boleta individual</div>
+    <div class="fr">
+      <input id="d-num" placeholder="Número (ej: 042)" maxlength="3" style="width:90px;font-family:var(--mono);font-size:15px;text-align:center">
+      <input id="d-cliente" placeholder="Nombre del cliente" style="flex:1;min-width:130px">
+      <input id="d-desc" type="number" min="0" placeholder="Descuento €" style="width:110px">
+      <button class="btn btn-t" onclick="addDirectaIndividual()">+ Registrar</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Paquete — varios números al mismo comprador</div>
+    <div class="fr" style="align-items:flex-start;gap:10px">
+      <div style="flex:1;min-width:200px">
+        <textarea id="paq-nums" class="num-input-area" rows="3" placeholder="Números separados por comas o espacios&#10;Ej: 057, 159, 267, 845" oninput="previewPaq()" style="width:100%"></textarea>
+        <div class="num-preview" id="paq-preview"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:160px">
+        <input id="paq-cliente" placeholder="Nombre del comprador" style="width:100%">
+        <input id="paq-desc" type="number" min="0" placeholder="Descuento en € (opcional)" style="width:100%" oninput="previewPaq()">
+        <div id="paq-resumen" style="font-size:12px;font-family:var(--mono);color:var(--text2);padding:4px 0"></div>
+        <button class="btn btn-p" onclick="addPaquete()" style="width:100%">Registrar paquete</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Boletas registradas</div>
+    <div class="fr" style="margin-bottom:1rem">
+      <input id="d-buscar" placeholder="Buscar número o cliente..." oninput="renderDirectas()" style="flex:1;min-width:150px">
+      <select id="d-tipo" onchange="renderDirectas()">
+        <option value="">Todos los tipos</option>
+        <option value="individual">Individuales</option>
+        <option value="paquete">Paquetes</option>
+      </select>
+      <select id="d-estado" onchange="renderDirectas()">
+        <option value="">Todos los estados</option>
+        <option value="pagado">Pagadas</option>
+        <option value="pendiente">Pendientes</option>
+      </select>
+    </div>
+    <table>
+      <thead><tr><th>Número(s)</th><th>Cliente</th><th>Tipo</th><th>Base</th><th>Desc.</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody id="tb-d"><tr><td colspan="8" class="empty">Sin boletas registradas</td></tr></tbody>
+    </table>
+    <div id="d-resumen" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:13px;display:none"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ DINERO POR RECOGER -->
+<div id="tab-dinero" class="section">
+  <div class="subtab-row">
+    <button class="subtab active" onclick="goDineroTab('vendedores',this)">Vendedores</button>
+    <button class="subtab" onclick="goDineroTab('paquetes',this)">Paquetes</button>
+    <button class="subtab" onclick="goDineroTab('individuales',this)">Individuales</button>
+  </div>
+  <div class="search-bar">
+    <input id="dinero-buscar" placeholder="Buscar por nombre..." oninput="renderDinero()">
+    <select id="dinero-filtro-estado" onchange="renderDinero()">
+      <option value="">Todos</option>
+      <option value="pendiente">Solo pendientes</option>
+      <option value="aldia">Solo al día / pagados</option>
+    </select>
+  </div>
+  <div id="dinero-contenido"></div>
+</div>
+
+<!-- ══════════════════════ REGISTRAR ABONO RÁPIDO (público) -->
+<div id="tab-abonos-rapido" class="section">
+  <div class="card" style="background:var(--accent-bg);border-color:#aacab6">
+    <div style="font-size:13px;color:var(--accent);font-weight:600;margin-bottom:4px">Modo registro rápido de abonos</div>
+    <div style="font-size:12px;color:var(--text2)">Los abonos registrados aquí quedan pendientes de confirmación por el administrador antes de sumarse al saldo oficial.</div>
+  </div>
+  <div class="card">
+    <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Dinero pendiente por entregar</div>
+    <div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--amber);margin-bottom:10px" id="total-hoy">€0,00</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="background:var(--accent-bg);border:1px solid #aacab6;border-radius:var(--r);padding:.5rem .9rem;flex:1;min-width:120px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:3px">💵 Efectivo</div>
+        <div style="font-size:18px;font-weight:700;font-family:var(--mono);color:var(--accent)" id="total-hoy-efectivo">€0,00</div>
+      </div>
+      <div style="background:var(--blue-bg);border:1px solid #8aaad0;border-radius:var(--r);padding:.5rem .9rem;flex:1;min-width:120px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);margin-bottom:3px">📱 Bizum</div>
+        <div style="font-size:18px;font-weight:700;font-family:var(--mono);color:var(--blue)" id="total-hoy-bizum">€0,00</div>
+      </div>
+    </div>
+  </div>
+  <div class="search-bar"><input id="rapido-buscar" placeholder="Buscar vendedor..." oninput="renderAbonosRapido()"></div>
+  <div id="abonos-rapido-lista"></div>
+</div>
+
+<!-- ══════════════════════ HISTORIAL -->
+<div id="tab-historial" class="section">
+  <div class="search-bar">
+    <input id="hist-buscar" placeholder="Buscar por nombre..." oninput="renderHistorial()">
+    <select id="hist-tipo" onchange="renderHistorial()">
+      <option value="">Todos</option>
+      <option value="v">Vendedores</option>
+      <option value="i">Individuales</option>
+      <option value="p">Paquetes</option>
+    </select>
+  </div>
+  <div id="historial-lista"></div>
+</div>
+
+<!-- ══════════════════════ ABONOS -->
+<div id="tab-abonos" class="section">
+  <div id="pendientes-confirmacion" style="margin-bottom:1rem"></div>
+  <div class="subtab-row">
+    <button class="subtab active" onclick="goAbonoTab('vendedores',this)">Vendedores</button>
+    <button class="subtab" onclick="goAbonoTab('paquetes',this)">Paquetes</button>
+    <button class="subtab" onclick="goAbonoTab('individuales',this)">Individuales</button>
+  </div>
+  <div class="search-bar">
+    <input id="abonos-buscar" placeholder="Buscar por nombre..." oninput="renderAbonos()">
+  </div>
+  <div id="abonos-lista"></div>
+</div>
+
+<!-- ══════════════════════ NÚMEROS ABONADOS -->
+<div id="tab-abonados" class="section">
+  <div class="card" style="background:var(--gold-bg);border-color:#c8a830">
+    <div style="font-size:13px;color:var(--gold);font-weight:600;margin-bottom:4px">Números abonados — independientes del sorteo actual</div>
+    <div style="font-size:12px;color:var(--text2)">Los números abonados no afectan ni bloquean el sorteo actual. Solo al confirmarlos pasan a RC&amp;R. Al iniciar un nuevo sorteo quedan listos para confirmar de nuevo.</div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Registrar número abonado individual</div>
+    <div class="fr">
+      <input id="ab-num" placeholder="Número (ej: 007)" maxlength="3" style="width:90px;font-family:var(--mono);font-size:15px;text-align:center">
+      <input id="ab-titular" placeholder="Nombre del titular" style="flex:1;min-width:140px">
+      <button class="btn btn-gold" onclick="addAbonadoInd()">+ Individual</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Registrar paquete abonado</div>
+    <div class="fr" style="align-items:flex-start;gap:10px">
+      <div style="flex:1;min-width:200px">
+        <textarea id="abp-nums" class="num-input-area" rows="2" placeholder="Números del paquete abonado" oninput="previewAbPaq()" style="width:100%"></textarea>
+        <div class="num-preview" id="abp-preview"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:160px">
+        <input id="abp-titular" placeholder="Nombre del titular" style="width:100%">
+        <button class="btn btn-gold" onclick="addAbonadoPaq()" style="width:100%">+ Paquete abonado</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Números abonados registrados</div>
+    <div id="abonados-lista"><div class="empty">Sin números abonados</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ ADMON -->
+<div id="tab-admon" class="section">
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <div class="ctitle">Configuración del sorteo</div>
+        <div class="fr" style="margin-bottom:8px">
+          <input id="s-nombre" placeholder="Nombre del sorteo" style="flex:1">
+          <button class="btn" onclick="guardarNombre()">Guardar</button>
+        </div>
+        <div class="fr">
+          <input id="s-precio" type="number" min="0" placeholder="Precio por boleta (€)" style="flex:1">
+          <button class="btn" onclick="guardarPrecio()">Guardar</button>
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-top:6px;font-family:var(--mono)" id="s-precio-actual"></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Contraseña de administrador</div>
+        <div class="fr">
+          <input id="s-pass-actual" type="password" placeholder="Contraseña actual" style="flex:1">
+          <input id="s-pass-nueva" type="password" placeholder="Nueva contraseña" style="flex:1">
+          <button class="btn" onclick="cambiarPassword()">Cambiar</button>
+        </div>
+        <p style="font-size:11px;color:var(--text3);margin-top:6px;font-family:var(--mono)">Contraseña por defecto: <strong>1234</strong></p>
+      </div>
+      <div class="card">
+        <div class="ctitle">Número ganador</div>
+        <div class="fr">
+          <input id="s-num" placeholder="000" maxlength="3" style="width:80px;font-family:var(--mono);font-size:18px;text-align:center">
+          <button class="btn btn-p" onclick="registrarGanador()">Registrar</button>
+          <button class="btn btn-d btn-sm" onclick="borrarGanador()">Borrar</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Exportar</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="fr"><button class="btn btn-p" onclick="exportarCSV()">Exportar completo (CSV)</button></div>
+          <div class="fr"><button class="btn btn-g" onclick="exportarSimple()">Exportar simple (CSV)</button><span class="lbl">solo Número y Titular</span></div>
+          <div class="fr"><button class="btn" onclick="exportarJSON()">Guardar respaldo (.json)</button></div>
+          <div class="fr">
+            <input type="file" id="import-file" accept=".json" onchange="importarJSON(event)" style="display:none">
+            <button class="btn" onclick="document.getElementById('import-file').click()">Cargar respaldo (.json)</button>
+          </div>
+        </div>
+      </div>
+      <div class="sorteo-box">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--red);margin-bottom:8px">⚠ Nuevo sorteo</div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6">Borrará boletas y abonos de cobro. <strong>Vendedores y números abonados permanecerán siempre.</strong></p>
+        <button class="btn btn-warn" onclick="nuevoSorteo()">Iniciar nuevo sorteo</button>
+      </div>
+    </div>
+    <div id="resultado-sorteo"></div>
+  </div>
+</div>
+
+</div>
+
+<!-- MODAL -->
+<div class="toast" id="toast"></div>
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modal-title"></h3>
+    <p id="modal-msg"></p>
+    <div id="modal-fields"></div>
+    <div class="modal-btns">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-p" id="modal-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════ ESTADO
+let V    = JSON.parse(localStorage.getItem('st8_v')    || '[]');
+let B    = JSON.parse(localStorage.getItem('st8_b')    || '{}');
+let PAQ  = JSON.parse(localStorage.getItem('st8_paq')  || '[]');
+let ABV  = JSON.parse(localStorage.getItem('st8_abv')  || '{}');
+let ABI  = JSON.parse(localStorage.getItem('st8_abi')  || '{}');
+let ABP  = JSON.parse(localStorage.getItem('st8_abp')  || '{}');
+let ABON = JSON.parse(localStorage.getItem('st8_abon') || '{}');
+let ABPAQ= JSON.parse(localStorage.getItem('st8_abpaq')|| '[]');
+let CFG  = JSON.parse(localStorage.getItem('st8_cfg')  || '{"nombre":"Sorteo","precio":50,"ganador":null,"pass":"1234"}');
+
+let sel = new Set();
+let mapaMode = 'asignar';
+let dineroTab = 'vendedores';
+let abonoTab = 'vendedores';
+let isAdmin = false;
+
+// Vendor search state
+let vsSelected = {mapa: null, texto: null};
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  if(!t)return;
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+const save = () => {
+  localStorage.setItem('st8_v',    JSON.stringify(V));
+  localStorage.setItem('st8_b',    JSON.stringify(B));
+  localStorage.setItem('st8_paq',  JSON.stringify(PAQ));
+  localStorage.setItem('st8_abv',  JSON.stringify(ABV));
+  localStorage.setItem('st8_abi',  JSON.stringify(ABI));
+  localStorage.setItem('st8_abp',  JSON.stringify(ABP));
+  localStorage.setItem('st8_abon', JSON.stringify(ABON));
+  localStorage.setItem('st8_abpaq',JSON.stringify(ABPAQ));
+  localStorage.setItem('st8_cfg',  JSON.stringify(CFG));
+};
+const pad   = n => String(n).padStart(3,'0');
+const fmt   = n => '€' + Number(n).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+const today = () => new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+const prec  = () => CFG.precio || 50;
+const sortV = arr => [...arr].sort((a,b)=>a.nombre.localeCompare(b.nombre));
+
+// ═══════════════════════════════ ADMIN / PERFILES
+function toggleAdmin(){
+  if(isAdmin){
+    isAdmin=false;applyProfile();
+  } else {
+    showModal('Acceso de administrador','',()=>{
+      const pass=document.getElementById('modal-pass-input').value;
+      if(pass===(CFG.pass||'1234')){isAdmin=true;applyProfile();}
+      else alert('Contraseña incorrecta');
+    },'<div class="modal-field"><label>Contraseña</label><input id="modal-pass-input" type="password" placeholder="Contraseña" style="width:100%" autofocus></div>','Entrar');
+  }
+}
+function applyProfile(){
+  const btn=document.getElementById('admin-toggle-btn');
+  const badge=document.getElementById('readonly-badge');
+  const adminTabs=document.querySelectorAll('.tab.admin-only');
+  const adminSection=document.getElementById('mapa-admin-section');
+  const adminControls=document.querySelectorAll('.admin-control');
+  if(isAdmin){
+    btn.textContent='🔓 Salir de admin';btn.classList.add('active');
+    badge.classList.remove('visible');
+    adminTabs.forEach(t=>t.classList.add('visible'));
+    adminSection.style.display='block';
+    adminControls.forEach(el=>el.style.display='');
+  } else {
+    btn.textContent='🔒 Administrador';btn.classList.remove('active');
+    badge.classList.add('visible');
+    adminTabs.forEach(t=>t.classList.remove('visible'));
+    adminSection.style.display='none';
+    adminControls.forEach(el=>el.style.display='none');
+    // Si estaba en una pestaña admin, ir a dashboard
+    const activeAdminTab=document.querySelector('.tab.admin-only.active');
+    if(activeAdminTab){
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+      document.querySelector('.tab').classList.add('active');
+      document.getElementById('tab-dashboard').classList.add('active');
+      renderDash();
+    }
+  }
+}
+function cambiarPassword(){
+  const actual=document.getElementById('s-pass-actual').value;
+  const nueva=document.getElementById('s-pass-nueva').value;
+  if(actual!==(CFG.pass||'1234')){alert('Contraseña actual incorrecta');return;}
+  if(!nueva||nueva.length<3){alert('La nueva contraseña debe tener al menos 3 caracteres');return;}
+  CFG.pass=nueva;saveAndSync();
+  document.getElementById('s-pass-actual').value='';document.getElementById('s-pass-nueva').value='';
+  alert('Contraseña actualizada correctamente');
+}
+
+// ═══════════════════════════════ VENDOR SEARCH
+function vsPopulate(id){
+  const drop=document.getElementById('vs-'+id+'-drop');
+  const input=document.getElementById('vs-'+id+'-input');
+  const q=input.value.toLowerCase();
+  const lista=sortV(V).filter(v=>!q||v.nombre.toLowerCase().includes(q));
+  if(!lista.length){drop.innerHTML='<div class="vs-none">Sin coincidencias</div>';return;}
+  drop.innerHTML=lista.map(v=>`<div class="vs-option${vsSelected[id]===v.id?' selected':''}" onmousedown="vsSelect('${id}',${v.id},'${v.nombre.replace(/'/g,"\\'")}')">
+    ${v.nombre}${v.telefono?`<span style="font-size:11px;color:var(--text3);margin-left:6px">${v.telefono}</span>`:''}
+  </div>`).join('');
+}
+function vsFilter(id){vsPopulate(id);}
+function vsOpen(id){vsPopulate(id);document.getElementById('vs-'+id+'-drop').classList.add('open');}
+function vsClose(id){document.getElementById('vs-'+id+'-drop').classList.remove('open');}
+function vsSelect(id,vid,nombre){
+  vsSelected[id]=vid;
+  document.getElementById('vs-'+id+'-input').value=nombre;
+  vsClose(id);
+}
+function vsGetSelected(id){return vsSelected[id];}
+function vsReset(id){vsSelected[id]=null;document.getElementById('vs-'+id+'-input').value='';}
+function vsRefresh(){
+  // Refresh dropdowns if open
+  ['mapa','texto'].forEach(id=>{
+    const drop=document.getElementById('vs-'+id+'-drop');
+    if(drop&&drop.classList.contains('open'))vsPopulate(id);
+  });
+}
+
+// ═══════════════════════════════ TABS
+function goTab(id,el){
+  if(!isAdmin&&['directas','abonos','abonados','admon'].includes(id))return;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  refreshSelects();
+  ({dashboard:renderDash,mapa:renderMapa,vendedores:renderVendedores,
+    directas:renderDirectas,dinero:renderDinero,'abonos-rapido':renderAbonosRapido,
+    abonos:renderAbonos,historial:renderHistorial,abonados:renderAbonados,
+    admon:renderAdmon})[id]?.();
+}
+function goDineroTab(id,el){
+  document.querySelectorAll('#tab-dinero .subtab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');dineroTab=id;renderDinero();
+}
+function goAbonoTab(id,el){
+  document.querySelectorAll('#tab-abonos .subtab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');abonoTab=id;renderAbonos();
+}
+
+// ═══════════════════════════════ SELECTS
+function refreshSelects(){
+  const mf=document.getElementById('mapa-filtro');
+  if(mf){
+    const opts=sortV(V).map(v=>`<option value="${v.id}">${v.nombre}</option>`).join('');
+    mf.innerHTML='<option value="">Ver todos</option><option value="__ab__">Solo abonados</option><option value="__ind__">Solo individuales</option><option value="__paq__">Solo paquetes</option>'+opts;
+  }
+  document.getElementById('badge-nombre').textContent=CFG.nombre||'Sorteo';
+  document.getElementById('header-precio').textContent=`Precio: ${fmt(prec())}`;
+  vsRefresh();
+}
+
+// ═══════════════════════════════ MODAL
+function showModal(title,msg,cb,fieldsHTML,okLabel){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-msg').textContent=msg||'';
+  document.getElementById('modal-fields').innerHTML=fieldsHTML||'';
+  document.getElementById('modal-ok').textContent=okLabel||'Confirmar';
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('modal-ok').onclick=()=>{closeModal();cb&&cb();};
+  // Focus first input if any
+  setTimeout(()=>{const inp=document.querySelector('#modal-fields input');if(inp)inp.focus();},100);
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+
+// ═══════════════════════════════ VENDEDORES
+function addV(){
+  const n=document.getElementById('v-nom').value.trim();
+  if(!n){alert('Ingresa el nombre');return;}
+  V.push({id:Date.now(),nombre:n,telefono:document.getElementById('v-tel').value.trim(),
+    comision:parseFloat(document.getElementById('v-com').value)||20});
+  saveAndSync();document.getElementById('v-nom').value='';document.getElementById('v-tel').value='';
+  renderVendedores();vsRefresh();
+}
+function removeV(id){
+  const v=V.find(v=>v.id===id);
+  showModal('Eliminar vendedor',`¿Eliminar a ${v.nombre}? Sus números del sorteo actual quedarán libres, pero el vendedor se eliminará permanentemente.`,()=>{
+    V=V.filter(v=>v.id!==id);
+    Object.keys(B).forEach(k=>{if(B[k].vid===id)delete B[k];});
+    delete ABV[id];
+    saveAndSync();renderVendedores();vsRefresh();
+  });
+}
+function editarVendedor(id){
+  const v=V.find(v=>v.id===id);if(!v)return;
+  showModal('Editar vendedor','',()=>{
+    const nombre=document.getElementById('edit-v-nom').value.trim();
+    const tel=document.getElementById('edit-v-tel').value.trim();
+    const com=parseFloat(document.getElementById('edit-v-com').value)||20;
+    if(!nombre){alert('Ingresa el nombre');return;}
+    v.nombre=nombre;v.telefono=tel;v.comision=com;
+    saveAndSync();renderVendedores();vsRefresh();
+  },`<div class="modal-field"><label>Nombre</label><input id="edit-v-nom" value="${v.nombre}"></div>
+     <div class="modal-field"><label>Teléfono</label><input id="edit-v-tel" value="${v.telefono||''}"></div>
+     <div class="modal-field"><label>Comisión (%)</label><input id="edit-v-com" type="number" min="0" max="100" value="${v.comision}"></div>`,'Guardar');
+}
+function netoV(v){
+  const nums=Object.keys(B).filter(k=>B[k].tipo==='vendedor'&&B[k].vid===v.id);
+  const bruto=nums.length*prec();const com=bruto*(v.comision/100);
+  return{bruto,com,neto:bruto-com,count:nums.length};
+}
+function checkPagosAutoV(vid){
+  const v=V.find(v=>v.id===vid);if(!v)return;
+  const{neto}=netoV(v);
+  const ab=(ABV[vid]||[]).filter(x=>!x.pendiente).reduce((a,x)=>a+x.monto,0);
+  const alDia=neto>0&&ab>=neto;
+  Object.keys(B).forEach(k=>{if(B[k].tipo==='vendedor'&&B[k].vid===vid)B[k].pagado=alDia;});
+  save();
+}
+function checkPagosAutoInd(num){
+  const b=B[num];if(!b||b.tipo!=='individual')return;
+  const total=prec()-(b.descuento||0);
+  const ab=(ABI[num]||[]).reduce((a,x)=>a+x.monto,0);
+  b.pagado=total>0&&ab>=total;save();
+}
+function checkPagosAutoPaq(paqId){
+  const paq=PAQ.find(p=>p.id===paqId);if(!paq)return;
+  const ab=(ABP[paqId]||[]).reduce((a,x)=>a+x.monto,0);
+  const alDia=paq.total>0&&ab>=paq.total;
+  paq.pagado=alDia;paq.nums.forEach(n=>{if(B[n])B[n].pagado=alDia;});save();
+}
+function renderVendedores(){
+  const buscar=(document.getElementById('v-buscar')||{}).value?.toLowerCase()||'';
+  const cont=document.getElementById('vendedores-lista');
+  if(!V.length){cont.innerHTML='<div class="card"><div class="empty">Sin vendedores registrados</div></div>';return;}
+  let listaV=sortV(V);if(buscar)listaV=listaV.filter(v=>v.nombre.toLowerCase().includes(buscar));
+  if(!listaV.length){cont.innerHTML='<div class="card"><div class="empty">Sin coincidencias</div></div>';return;}
+  cont.innerHTML=listaV.map(v=>{
+    const{bruto,com,neto,count}=netoV(v);
+    const nums=Object.entries(B).filter(([,b])=>b.tipo==='vendedor'&&b.vid===v.id).sort(([a],[b])=>a.localeCompare(b));
+    return`<div class="v-card">
+      <div class="v-card-header">
+        <div>
+          <span style="font-weight:700;font-size:14px">${v.nombre}</span>
+          ${v.telefono?`<span style="font-family:var(--mono);font-size:11px;color:var(--text2);margin-left:8px">${v.telefono}</span>`:''}
+          <span class="badge bb" style="margin-left:6px">${v.comision}% com.</span>
+          <span class="badge bp" style="margin-left:4px">${count} boletas</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="text-align:right;font-size:12px;font-family:var(--mono)">
+            <div><span class="neto-cell">${fmt(neto)}</span> <span style="font-size:10px;color:var(--text3)">neto</span></div>
+          </div>
+          ${isAdmin?`<button class="btn btn-sm" onclick="editarVendedor(${v.id})">Editar</button>
+          <button class="btn btn-sm" onclick="gestionarNumsVendedor(${v.id})">+ Números</button>
+          <button class="btn btn-sm btn-d" onclick="removeV(${v.id})">Eliminar</button>`:''}
+        </div>
+      </div>
+      <div class="v-card-nums">
+        ${nums.length?nums.map(([k,b])=>`<div class="vv-num ${b.pagado?'pago':'pend'}" title="${k}${b.pagado?' · PAGADO':' · PENDIENTE'}">${k}</div>`).join('')
+        :'<span style="font-size:12px;color:var(--text3)">Sin números asignados</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════ BUSCADOR NÚMERO
+function buscarNumero(){
+  const raw=document.getElementById('num-buscar').value.trim();
+  const res=document.getElementById('num-result');
+  if(!raw){res.classList.remove('visible');return;}
+  const n=parseInt(raw,10);
+  if(isNaN(n)||n<0||n>999){res.classList.add('visible');res.innerHTML=`<span style="color:var(--red)">Número inválido</span>`;return;}
+  const k=pad(n);
+  const isAbon=!!ABON[k];const b=B[k];
+  res.classList.add('visible');
+  if(isAbon){
+    const conf=ABON[k].confirmado&&B[k];
+    res.innerHTML=`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-family:var(--mono);font-weight:700;font-size:18px;color:var(--gold)">${k}</span>
+      <span class="badge bgold">★ Abonado</span>
+      ${conf?'<span class="badge bg">Confirmado en RC&R</span>':'<span class="badge ba">Por confirmar</span>'}
+      <span style="font-weight:600">${ABON[k].titular}</span>
+    </div>`;
+  } else if(b){
+    let quien='',tipo='',badgeCls='',extraInfo='';
+    if(b.tipo==='vendedor'){const v=V.find(v=>v.id===b.vid);quien=v?v.nombre:'?';tipo='Vendedor';badgeCls='ba';}
+    else if(b.tipo==='paquete'){const paq=PAQ.find(p=>p.id===b.paqId);quien=b.cliente;tipo=`Paquete ×${paq?paq.nums.length:'?'}`;badgeCls='bb';extraInfo=paq?`Total: ${fmt(paq.total)}`:''}
+    else{quien=b.cliente;tipo='Individual';badgeCls='bt';extraInfo=`Total: ${fmt(prec()-(b.descuento||0))}`;}
+    res.innerHTML=`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-family:var(--mono);font-weight:700;font-size:18px">${k}</span>
+      <span class="badge ${badgeCls}">${tipo}</span>
+      <span class="badge ${b.pagado?'bg':'ba'}">${b.pagado?'✓ Pagado':'Pendiente'}</span>
+      <span style="font-weight:600">${quien}</span>
+      ${extraInfo?`<span style="font-size:12px;color:var(--text2);font-family:var(--mono)">${extraInfo}</span>`:''}
+    </div>`;
+  } else {
+    res.innerHTML=`<div style="display:flex;align-items:center;gap:10px">
+      <span style="font-family:var(--mono);font-weight:700;font-size:18px;color:var(--text3)">${k}</span>
+      <span class="badge bgr">Libre — sin asignar</span>
+    </div>`;
+  }
+}
+
+// ═══════════════════════════════ BOLETAS DIRECTAS
+function parsearNums(raw){
+  return raw.split(/[\s,;]+/).map(t=>t.trim()).filter(Boolean).map(t=>{
+    const n=parseInt(t,10);
+    if(isNaN(n)||n<0||n>999)return{raw:t,k:null,estado:'inv'};
+    const k=pad(n);
+    if(ABON[k])return{raw:t,k,estado:'ab'};
+    if(B[k])return{raw:t,k,estado:'dup'};
+    return{raw:t,k,estado:'ok'};
+  });
+}
+function addDirectaIndividual(){
+  const n=parseInt(document.getElementById('d-num').value.trim());
+  if(isNaN(n)||n<0||n>999){alert('Número inválido');return;}
+  const k=pad(n);if(B[k]||ABON[k]){alert(`El número ${k} ya está ocupado`);return;}
+  const cliente=document.getElementById('d-cliente').value.trim();if(!cliente){alert('Ingresa el nombre');return;}
+  const desc=parseFloat(document.getElementById('d-desc').value)||0;
+  B[k]={tipo:'individual',cliente,descuento:desc,pagado:false};
+  saveAndSync();document.getElementById('d-num').value='';document.getElementById('d-cliente').value='';document.getElementById('d-desc').value='';
+  renderDirectas();
+}
+function previewPaq(){
+  const items=parsearNums(document.getElementById('paq-nums').value);
+  document.getElementById('paq-preview').innerHTML=items.map(({k,raw,estado})=>{
+    const cls={ok:'prev-ok',dup:'prev-dup',inv:'prev-inv',ab:'prev-ab'}[estado];
+    const label={ok:k,dup:`${k}✗`,inv:`${raw}?`,ab:`${k}★`}[estado];
+    return`<span class="prev-tag ${cls}">${label}</span>`;
+  }).join('');
+  const ok=items.filter(i=>i.estado==='ok');
+  const base=ok.length*prec();const desc=parseFloat(document.getElementById('paq-desc').value)||0;
+  document.getElementById('paq-resumen').textContent=ok.length?`${ok.length} números · Base: ${fmt(base)} · Desc: ${fmt(desc)} · Total: ${fmt(Math.max(0,base-desc))}`:'';
+}
+function addPaquete(){
+  const items=parsearNums(document.getElementById('paq-nums').value);
+  const ok=items.filter(i=>i.estado==='ok');if(!ok.length){alert('No hay números válidos');return;}
+  const cliente=document.getElementById('paq-cliente').value.trim();if(!cliente){alert('Ingresa el nombre');return;}
+  const desc=parseFloat(document.getElementById('paq-desc').value)||0;
+  const base=ok.length*prec();const total=Math.max(0,base-desc);
+  const paqId=Date.now().toString();
+  PAQ.push({id:paqId,cliente,nums:ok.map(i=>i.k),precioBase:base,descuento:desc,total,pagado:false});
+  ok.forEach(({k})=>{B[k]={tipo:'paquete',cliente,paqId,pagado:false};});
+  saveAndSync();document.getElementById('paq-nums').value='';document.getElementById('paq-cliente').value='';document.getElementById('paq-desc').value='';
+  document.getElementById('paq-preview').innerHTML='';document.getElementById('paq-resumen').textContent='';
+  renderDirectas();
+}
+function editarMonto(tipo,id){
+  if(tipo==='individual'){
+    const b=B[id];
+    showModal('Editar monto',`Boleta ${id} — ${b.cliente}`,()=>{
+      B[id].descuento=parseFloat(document.getElementById('edit-desc').value)||0;
+      saveAndSync();renderDirectas();renderDinero();
+    },`<div class="modal-field"><label>Precio base: ${fmt(prec())}</label></div>
+       <div class="modal-field"><label>Descuento (€)</label><input id="edit-desc" type="number" min="0" value="${b.descuento||0}"></div>`);
+  } else {
+    const paq=PAQ.find(p=>p.id===id);if(!paq)return;
+    showModal('Editar monto del paquete',`Paquete de ${paq.cliente}`,()=>{
+      const d=parseFloat(document.getElementById('edit-desc-paq').value)||0;
+      paq.descuento=d;paq.total=Math.max(0,paq.precioBase-d);
+      saveAndSync();renderDirectas();renderDinero();
+    },`<div class="modal-field"><label>Precio base: ${fmt(paq.precioBase)}</label></div>
+       <div class="modal-field"><label>Descuento (€)</label><input id="edit-desc-paq" type="number" min="0" value="${paq.descuento||0}"></div>`);
+  }
+}
+function agregarNumsPaquete(paqId){
+  const paq=PAQ.find(p=>p.id===paqId);if(!paq)return;
+  showModal(`Agregar números a paquete de ${paq.cliente}`,'',()=>{
+    const raw=document.getElementById('add-nums-paq').value;
+    const items=parsearNums(raw);const ok=items.filter(i=>i.estado==='ok');
+    if(!ok.length){alert('No hay números válidos');return;}
+    ok.forEach(({k})=>{B[k]={tipo:'paquete',cliente:paq.cliente,paqId,pagado:paq.pagado};paq.nums.push(k);});
+    paq.precioBase=paq.nums.length*prec();paq.total=Math.max(0,paq.precioBase-paq.descuento);
+    saveAndSync();renderDirectas();renderDinero();
+  },`<div class="modal-field"><label>Números a agregar</label><textarea id="add-nums-paq" class="num-input-area" rows="2" style="width:100%"></textarea></div>`,'Agregar');
+}
+function togglePagoBoleta(k){
+  const b=B[k];if(!b)return;
+  if(b.tipo==='paquete'){const paq=PAQ.find(p=>p.id===b.paqId);if(!paq)return;paq.pagado=!paq.pagado;paq.nums.forEach(n=>{if(B[n])B[n].pagado=paq.pagado;});}
+  else b.pagado=!b.pagado;
+  saveAndSync();renderDirectas();renderDinero();
+}
+function removeBoleta(k){
+  const b=B[k];if(!b)return;
+  if(b.tipo==='paquete'){
+    const paq=PAQ.find(p=>p.id===b.paqId);
+    showModal('Eliminar paquete',`¿Eliminar paquete de ${paq?paq.cliente:''} (${paq?paq.nums.length:0} números)?`,()=>{
+      if(paq){paq.nums.forEach(n=>delete B[n]);PAQ.splice(PAQ.indexOf(paq),1);delete ABP[paq.id];}
+      saveAndSync();renderDirectas();renderDinero();
+    });
+  } else {
+    showModal('Eliminar boleta',`¿Eliminar boleta ${k} de ${b.cliente}?`,()=>{delete B[k];delete ABI[k];saveAndSync();renderDirectas();renderDinero();});
+  }
+}
+function renderDirectas(){
+  const buscar=(document.getElementById('d-buscar')||{}).value?.toLowerCase()||'';
+  const tipo=(document.getElementById('d-tipo')||{}).value||'';
+  const estado=(document.getElementById('d-estado')||{}).value||'';
+  const tb=document.getElementById('tb-d');let filas=[];
+  Object.entries(B).filter(([,b])=>b.tipo==='individual').forEach(([k,b])=>{
+    if(tipo==='paquete')return;
+    if(estado==='pagado'&&!b.pagado)return;if(estado==='pendiente'&&b.pagado)return;
+    if(buscar&&!k.includes(buscar)&&!b.cliente.toLowerCase().includes(buscar))return;
+    const p=prec();const d=b.descuento||0;const tot=p-d;
+    filas.push({sort:b.cliente,html:`<tr>
+      <td style="font-family:var(--mono);font-weight:700">${k}</td>
+      <td style="font-weight:600">${b.cliente}</td>
+      <td><span class="badge bt">Individual</span></td>
+      <td style="font-family:var(--mono)">${fmt(p)}</td>
+      <td style="font-family:var(--mono)">${d>0?fmt(d):'—'}</td>
+      <td style="font-family:var(--mono);font-weight:700">${fmt(tot)}</td>
+      <td><span class="badge ${b.pagado?'bg':'bt'}" style="cursor:pointer" onclick="togglePagoBoleta('${k}')">${b.pagado?'✓ Pagada':'Pendiente'}</span></td>
+      <td style="display:flex;gap:3px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="togglePagoBoleta('${k}')">${b.pagado?'Pendiente':'Pagada'}</button>
+        <button class="btn btn-sm" onclick="editarMonto('individual','${k}')">Editar</button>
+        <button class="btn btn-sm" onclick="agregarNumsABoleta('individual','${k}')">+ Núm.</button>
+        <button class="btn btn-sm btn-d" onclick="removeBoleta('${k}')">✕</button>
+      </td></tr>`});
+  });
+  const paqVistos=new Set();
+  PAQ.forEach(paq=>{
+    if(paqVistos.has(paq.id))return;paqVistos.add(paq.id);
+    if(tipo==='individual')return;
+    if(estado==='pagado'&&!paq.pagado)return;if(estado==='pendiente'&&paq.pagado)return;
+    if(buscar&&!paq.cliente.toLowerCase().includes(buscar)&&!paq.nums.some(n=>n.includes(buscar)))return;
+    filas.push({sort:paq.cliente,html:`<tr>
+      <td style="font-family:var(--mono);font-size:11px;font-weight:700">${paq.nums.join(', ')}</td>
+      <td style="font-weight:600">${paq.cliente}</td>
+      <td><span class="badge bb">Paquete ×${paq.nums.length}</span></td>
+      <td style="font-family:var(--mono)">${fmt(paq.precioBase)}</td>
+      <td style="font-family:var(--mono)">${paq.descuento>0?fmt(paq.descuento):'—'}</td>
+      <td style="font-family:var(--mono);font-weight:700">${fmt(paq.total)}</td>
+      <td><span class="badge ${paq.pagado?'bg':'bb'}" style="cursor:pointer" onclick="togglePaqDinero('${paq.id}')">${paq.pagado?'✓ Pagado':'Pendiente'}</span></td>
+      <td style="display:flex;gap:3px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="togglePaqDinero('${paq.id}')">${paq.pagado?'Pendiente':'Pagado'}</button>
+        <button class="btn btn-sm" onclick="editarMonto('paquete','${paq.id}')">Editar</button>
+        <button class="btn btn-sm" onclick="agregarNumsPaquete('${paq.id}')">+ Núm.</button>
+        <button class="btn btn-sm btn-d" onclick="removeBoleta('${paq.nums[0]}')">✕</button>
+      </td></tr>`});
+  });
+  filas.sort((a,b)=>a.sort.localeCompare(b.sort));
+  tb.innerHTML=filas.length?filas.map(f=>f.html).join(''):'<tr><td colspan="8" class="empty">Sin boletas registradas</td></tr>';
+  const allInd=Object.entries(B).filter(([,b])=>b.tipo==='individual');
+  const recInd=allInd.filter(([,b])=>b.pagado).reduce((a,[,b])=>a+(prec()-(b.descuento||0)),0);
+  const pendInd=allInd.filter(([,b])=>!b.pagado).reduce((a,[,b])=>a+(prec()-(b.descuento||0)),0);
+  const recPaq=PAQ.filter(p=>p.pagado).reduce((a,p)=>a+p.total,0);
+  const pendPaq=PAQ.filter(p=>!p.pagado).reduce((a,p)=>a+p.total,0);
+  const res=document.getElementById('d-resumen');
+  if(allInd.length||PAQ.length){
+    res.style.display='flex';res.style.gap='20px';res.style.flexWrap='wrap';
+    res.innerHTML=`<span style="color:var(--text2)">Individuales: <strong>${allInd.length}</strong></span>
+      <span style="color:var(--text2)">Paquetes: <strong>${PAQ.length}</strong></span>
+      <span style="color:var(--text2)">Recaudado: <strong style="color:var(--teal);font-family:var(--mono)">${fmt(recInd+recPaq)}</strong></span>
+      <span style="color:var(--text2)">Por cobrar: <strong style="color:var(--amber);font-family:var(--mono)">${fmt(pendInd+pendPaq)}</strong></span>`;
+  } else res.style.display='none';
+}
+
+// ═══════════════════════════════ NÚMEROS ABONADOS
+function previewAbPaq(){
+  const items=parsearNums(document.getElementById('abp-nums').value);
+  document.getElementById('abp-preview').innerHTML=items.map(({k,raw,estado})=>{
+    const cls={ok:'prev-ok',dup:'prev-dup',inv:'prev-inv',ab:'prev-ab'}[estado];
+    const label={ok:k,dup:`${k}✗`,inv:`${raw}?`,ab:`${k}★`}[estado];
+    return`<span class="prev-tag ${cls}">${label}</span>`;
+  }).join('');
+}
+function addAbonadoInd(){
+  const n=parseInt(document.getElementById('ab-num').value.trim());
+  if(isNaN(n)||n<0||n>999){alert('Número inválido');return;}
+  const k=pad(n);
+  if(ABON[k]){alert(`El número ${k} ya está registrado como abonado permanente`);return;}
+  const titular=document.getElementById('ab-titular').value.trim();if(!titular){alert('Ingresa el nombre');return;}
+  ABON[k]={titular,confirmado:false};
+  saveAndSync();document.getElementById('ab-num').value='';document.getElementById('ab-titular').value='';
+  renderAbonados();
+}
+function addAbonadoPaq(){
+  const items=parsearNums(document.getElementById('abp-nums').value);
+  const ok=items.filter(i=>i.estado==='ok');if(!ok.length){alert('No hay números válidos');return;}
+  const titular=document.getElementById('abp-titular').value.trim();if(!titular){alert('Ingresa el nombre');return;}
+  const abpaqId=Date.now().toString();
+  ABPAQ.push({id:abpaqId,titular,nums:ok.map(i=>i.k)});
+  ok.forEach(({k})=>{ABON[k]={titular,abpaqId,confirmado:false};});
+  saveAndSync();document.getElementById('abp-nums').value='';document.getElementById('abp-titular').value='';
+  document.getElementById('abp-preview').innerHTML='';renderAbonados();
+}
+function removeAbonado(k){
+  showModal('Eliminar número abonado',`¿Eliminar el número ${k} (${ABON[k].titular}) de los abonados permanentes?`,()=>{
+    const abpaqId=ABON[k].abpaqId;delete ABON[k];
+    if(abpaqId){const abpaq=ABPAQ.find(p=>p.id===abpaqId);if(abpaq){abpaq.nums=abpaq.nums.filter(n=>n!==k);if(!abpaq.nums.length)ABPAQ.splice(ABPAQ.indexOf(abpaq),1);}}
+    saveAndSync();renderAbonados();
+  });
+}
+function removePaqueteAbonado(abpaqId){
+  const abpaq=ABPAQ.find(p=>p.id===abpaqId);if(!abpaq)return;
+  showModal('Eliminar paquete abonado',`¿Eliminar el paquete completo de ${abpaq.titular} (${abpaq.nums.length} números)?`,()=>{
+    // Eliminar todos los números del paquete de ABON
+    abpaq.nums.forEach(k=>{delete ABON[k];});
+    // Eliminar el paquete de ABPAQ
+    ABPAQ.splice(ABPAQ.indexOf(abpaq),1);
+    saveAndSync();renderAbonados();
+  });
+}
+function editAbonado(k){
+  showModal('Editar titular',`Número ${k}`,()=>{
+    const t=document.getElementById('edit-titular').value.trim();if(!t)return;
+    ABON[k].titular=t;
+    const abpaqId=ABON[k].abpaqId;
+    if(abpaqId){const abpaq=ABPAQ.find(p=>p.id===abpaqId);if(abpaq)abpaq.titular=t;}
+    saveAndSync();renderAbonados();
+  },`<div class="modal-field"><label>Nombre del titular</label><input id="edit-titular" value="${ABON[k].titular}"></div>`);
+}
+function confirmarPaqAbonado(abpaqId){
+  const abpaq=ABPAQ.find(p=>p.id===abpaqId);if(!abpaq)return;
+  const numsDisp=abpaq.nums.filter(k=>!B[k]);
+  if(!numsDisp.length){alert('Todos los números ya fueron confirmados');return;}
+  const numsHtml=numsDisp.map(k=>`<label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-family:var(--mono);font-size:13px;cursor:pointer"><input type="checkbox" value="${k}" checked style="width:auto;height:auto">${k}</label>`).join('');
+  showModal(`Confirmar paquete abonado de ${abpaq.titular}`,'Selecciona los números que se confirman. Los no marcados quedarán libres.',()=>{
+    const checks=document.querySelectorAll('#modal-fields input[type=checkbox]');
+    const confirmados=[...checks].filter(c=>c.checked).map(c=>c.value);
+    const liberar=[...checks].filter(c=>!c.checked).map(c=>c.value);
+    const desc=parseFloat(document.getElementById('confirm-desc').value)||0;
+    liberar.forEach(k=>{if(ABON[k])ABON[k].confirmado=false;});
+    if(confirmados.length===1){
+      const k=confirmados[0];ABON[k].confirmado=true;
+      B[k]={tipo:'individual',cliente:abpaq.titular,descuento:desc,pagado:false};
+    } else if(confirmados.length>1){
+      const base=confirmados.length*prec();const total=Math.max(0,base-desc);
+      const paqId=Date.now().toString();
+      PAQ.push({id:paqId,cliente:abpaq.titular,nums:confirmados,precioBase:base,descuento:desc,total,pagado:false});
+      confirmados.forEach(k=>{ABON[k].confirmado=true;B[k]={tipo:'paquete',cliente:abpaq.titular,paqId,pagado:false};});
+    }
+    saveAndSync();renderAbonados();renderDirectas();renderMapa();
+  },`<div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);padding:8px;margin-bottom:10px">${numsHtml}</div>
+     <div class="modal-field"><label>Descuento en € (opcional)</label><input id="confirm-desc" type="number" min="0" value="0"></div>`,'Confirmar');
+}
+function confirmarIndAbonado(k){
+  if(B[k]){alert(`El número ${k} ya fue confirmado en este sorteo`);return;}
+  showModal(`Confirmar número abonado ${k}`,`Titular: ${ABON[k].titular}`,()=>{
+    const titular=document.getElementById('confirm-ind-titular').value.trim()||ABON[k].titular;
+    const desc=parseFloat(document.getElementById('confirm-ind-desc').value)||0;
+    ABON[k].confirmado=true;
+    B[k]={tipo:'individual',cliente:titular,descuento:desc,pagado:false};
+    saveAndSync();renderAbonados();renderDirectas();renderMapa();
+  },`<div class="modal-field"><label>Titular</label><input id="confirm-ind-titular" value="${ABON[k].titular}"></div>
+     <div class="modal-field"><label>Descuento en € (opcional)</label><input id="confirm-ind-desc" type="number" min="0" value="0"></div>`,'Confirmar');
+}
+function liberarParaEsteSorteo(k){
+  showModal('Liberar para este sorteo',
+    `El número ${k} (${ABON[k]?.titular}) quedará libre para asignarse en este sorteo, pero se conservará como abonado para los próximos. ¿Continuar?`,()=>{
+    // Si estaba confirmado en RC&R, quitarlo
+    if(B[k]){
+      if(B[k].tipo==='paquete'){
+        const paq=PAQ.find(p=>p.id===B[k].paqId);
+        if(paq){
+          paq.nums=paq.nums.filter(n=>n!==k);
+          if(!paq.nums.length){PAQ.splice(PAQ.indexOf(paq),1);}
+          else{paq.precioBase=paq.nums.length*prec();paq.total=Math.max(0,paq.precioBase-paq.descuento);}
+        }
+      }
+      delete B[k];
+    }
+    // Marcar como no confirmado pero conservar en ABON
+    if(ABON[k]){ABON[k].confirmado=false;ABON[k].liberado=true;}
+    saveAndSync();renderAbonados();renderMapa();
+  });
+}
+function renderAbonados(){
+  const cont=document.getElementById('abonados-lista');let html='';
+  // Paquetes abonados ordenados alfabéticamente
+  if(ABPAQ.length){
+    html+=`<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Paquetes abonados</div>`;
+    const paqOrdenados=[...ABPAQ].sort((a,b)=>a.titular.localeCompare(b.titular));
+    html+=paqOrdenados.map(abpaq=>{
+      const todosConf=abpaq.nums.every(k=>ABON[k]?.confirmado&&B[k]);
+      const algunoLiberable=abpaq.nums.some(k=>!ABON[k]?.confirmado||!B[k]);
+      return`<div style="border:1px solid #c8a830;border-radius:var(--rl);margin-bottom:10px;overflow:hidden">
+        <div style="padding:.8rem 1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;background:var(--gold-bg)">
+          <div>
+            <span style="font-weight:700">${abpaq.titular}</span>
+            <span class="badge bgold" style="margin-left:6px">Paquete ×${abpaq.nums.length}</span>
+            ${todosConf?'<span class="badge bg" style="margin-left:6px">Confirmado ✓</span>':''}
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${algunoLiberable?`<button class="btn btn-sm btn-g" onclick="confirmarPaqAbonado('${abpaq.id}')">Confirmar → RC&R</button>`:''}
+            <button class="btn btn-sm" onclick="editAbonado('${abpaq.nums[0]}')">Editar titular</button>
+            <button class="btn btn-sm btn-d" onclick="removePaqueteAbonado('${abpaq.id}')">Eliminar paquete</button>
+          </div>
+        </div>
+        <div style="padding:.6rem 1rem;display:flex;flex-wrap:wrap;gap:3px;background:var(--bg)">
+          ${abpaq.nums.map(k=>{
+            const conf=ABON[k]?.confirmado&&B[k];
+            const liberado=ABON[k]?.liberado&&!B[k];
+            return`<div class="vv-num ${conf?'pago':liberado?'':'vv-num'}"
+              style="${conf?'':liberado?'background:var(--surface2);border-color:var(--border);color:var(--text3);opacity:.6':'background:var(--gold-bg);border-color:#c8a830;color:var(--gold)'}"
+              title="${conf?'Confirmado en RC&R':liberado?'Liberado para este sorteo':'Pendiente de confirmar'}">${k}
+            </div>`;
+          }).join('')}
+        </div>
+        ${algunoLiberable?`<div style="padding:.5rem 1rem;background:var(--bg);border-top:1px solid var(--border);display:flex;gap:4px;flex-wrap:wrap">
+          ${abpaq.nums.filter(k=>!ABON[k]?.liberado&&!B[k]).map(k=>`
+            <button class="btn btn-sm" style="font-size:10px;color:var(--amber);border-color:#d4a870" onclick="liberarParaEsteSorteo('${k}')">Liberar ${k}</button>`).join('')}
+        </div>`:''}
+      </div>`;
+    }).join('');
+  }
+  // Individuales abonados ordenados alfabéticamente por titular
+  const indKeys=Object.keys(ABON).filter(k=>!ABON[k].abpaqId)
+    .sort((a,b)=>ABON[a].titular.localeCompare(ABON[b].titular));
+  if(indKeys.length){
+    html+=`<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin:10px 0 6px">Individuales abonados</div>`;
+    html+=`<div style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+      ${indKeys.map(k=>{
+        const conf=ABON[k].confirmado&&B[k];
+        const liberado=ABON[k].liberado&&!B[k];
+        return`<div class="ab-item">
+          <div>
+            <span style="font-family:var(--mono);font-weight:700;font-size:15px;color:var(--gold)">${k}</span>
+            <span style="margin-left:12px;font-weight:600">${ABON[k].titular}</span>
+            ${conf?'<span class="badge bg" style="margin-left:8px">Confirmado ✓</span>':liberado?'<span class="badge bgr" style="margin-left:8px">Liberado este sorteo</span>':'<span class="badge bgold" style="margin-left:8px">Por confirmar</span>'}
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${!conf&&!liberado?`<button class="btn btn-sm btn-g" onclick="confirmarIndAbonado('${k}')">Confirmar</button>`:''}
+            ${!conf&&!liberado?`<button class="btn btn-sm" style="color:var(--amber);border-color:#d4a870" onclick="liberarParaEsteSorteo('${k}')">Liberar</button>`:''}
+            <button class="btn btn-sm" onclick="editAbonado('${k}')">Editar</button>
+            <button class="btn btn-sm btn-d" onclick="removeAbonado('${k}')">Eliminar</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+  cont.innerHTML=html||'<div class="empty">Sin números abonados registrados</div>';
+}
+
+// ═══════════════════════════════ MAPA
+function setMode(m){
+  mapaMode=m;sel.clear();
+  ['asig','del','reasig','pago','gold'].forEach(id=>{const el2=document.getElementById('mode-'+id);if(el2)el2.classList.remove('active');});
+  const modeEl=document.getElementById({asignar:'mode-asig',desasignar:'mode-del',reasignar:'mode-reasig',pago:'mode-pago',abonado:'mode-gold'}[m]);if(modeEl)modeEl.classList.add('active');
+  document.getElementById('toolbar-asig').style.display=m==='asignar'?'block':'none';
+  document.getElementById('toolbar-del').style.display=m==='desasignar'?'block':'none';
+  const trEl=document.getElementById('toolbar-reasig');if(trEl)trEl.style.display=m==='reasignar'?'block':'none';
+  document.getElementById('toolbar-pago').style.display=m==='pago'?'block':'none';
+  document.getElementById('toolbar-gold').style.display=m==='abonado'?'block':'none';
+  renderMapa();
+}
+function toggleMapaAsigTipo(){
+  const t=document.getElementById('mapa-asig-tipo').value;
+  const vw=document.getElementById('vs-mapa-wrap');
+  vw.style.display=t==='vendedor'?'':'none';
+  document.getElementById('mapa-asig-cliente').style.display=t!=='vendedor'?'':'none';
+  document.getElementById('mapa-asig-desc').style.display=t!=='vendedor'?'':'none';
+}
+function toggleTextoTipo(){
+  const t=document.getElementById('texto-tipo').value;
+  const vw=document.getElementById('vs-texto-wrap');
+  vw.style.display=t==='vendedor'?'':'none';
+  document.getElementById('texto-cliente').style.display=t!=='vendedor'?'':'none';
+  document.getElementById('texto-desc').style.display=t!=='vendedor'?'':'none';
+}
+function renderMapa(){
+  const filtro=document.getElementById('mapa-filtro').value;
+  const grid=document.getElementById('mapa');grid.innerHTML='';
+  for(let i=0;i<1000;i++){
+    const k=pad(i);const b=B[k];const isAbon=!!ABON[k];const isSel=sel.has(k);
+    let cls='nc';
+    if(isSel)cls+=mapaMode==='desasignar'?' sel-del':mapaMode==='abonado'?' sel-gold':' sel';
+    else if(isAbon){cls+=' abonado';if(filtro&&filtro!=='__ab__')cls+=' dim';}
+    else if(b){
+      if(b.pagado)cls+=' pagado';
+      else if(b.tipo==='vendedor')cls+=' v-pend';
+      else if(b.tipo==='paquete')cls+=' p-pend';
+      else cls+=' i-pend';
+      if(filtro==='__ab__')cls+=' dim';
+      else if(filtro==='__ind__'&&b.tipo!=='individual')cls+=' dim';
+      else if(filtro==='__paq__'&&b.tipo!=='paquete')cls+=' dim';
+      else if(filtro&&!['__ab__','__ind__','__paq__'].includes(filtro)&&(b.tipo!=='vendedor'||b.vid!==parseInt(filtro)))cls+=' dim';
+    } else if(filtro)cls+=' dim';
+    const v=b&&b.tipo==='vendedor'?V.find(v=>v.id===b.vid):null;
+    let tip=k+' · libre';
+    if(isAbon)tip=`${k} · ★ ${ABON[k].titular}${ABON[k].confirmado?' (confirmado)':' (por confirmar)'}`;
+    else if(b){const quien=b.tipo==='vendedor'?(v?v.nombre:'?'):b.tipo==='paquete'?`Paquete: ${b.cliente}`:b.cliente;tip=`${k} · ${quien} · ${b.pagado?'PAGADO':'PENDIENTE'}`;}
+    const el=document.createElement('div');el.className=cls;el.textContent=k;el.title=tip;
+    el.onclick=()=>clickNum(k,b,isAbon);
+    grid.appendChild(el);
+  }
+  updateSelBar();
+}
+function clickNum(k,b,isAbon){
+  if(mapaMode==='asignar'){if(b||isAbon)return;sel.has(k)?sel.delete(k):sel.add(k);renderMapa();}
+  else if(mapaMode==='desasignar'){if(!b||isAbon)return;sel.has(k)?sel.delete(k):sel.add(k);document.getElementById('del-count').textContent=sel.size;renderMapa();}
+  else if(mapaMode==='pago'){
+    if(!b||isAbon)return;
+    if(b.tipo==='paquete'){
+      const paq=PAQ.find(p=>p.id===b.paqId);
+      showModal(`Paquete: ${paq?paq.cliente:''}`,`Estado: ${paq&&paq.pagado?'PAGADO':'PENDIENTE'}\n¿Cambiar?`,()=>{
+        if(paq){paq.pagado=!paq.pagado;paq.nums.forEach(n=>{if(B[n])B[n].pagado=paq.pagado;});}
+        saveAndSync();renderMapa();renderDinero();
+      });
+    } else {
+      const quien=b.tipo==='vendedor'?(V.find(v=>v.id===b.vid)||{nombre:'?'}).nombre:b.cliente;
+      showModal(`Número ${k}`,`${b.tipo==='vendedor'?'Vendedor':'Cliente'}: ${quien}\nEstado: ${b.pagado?'PAGADO':'PENDIENTE'}\n¿Cambiar?`,()=>{
+        B[k].pagado=!B[k].pagado;saveAndSync();renderMapa();renderDinero();
+      });
+    }
+  } else if(mapaMode==='abonado'){if(b||isAbon)return;sel.has(k)?sel.delete(k):sel.add(k);document.getElementById('gold-count').textContent=sel.size;renderMapa();}
+}
+function confirmarAsigMapa(){
+  if(!sel.size){alert('Selecciona números libres primero');return;}
+  const tipo=document.getElementById('mapa-asig-tipo').value;
+  if(tipo==='vendedor'){
+    const vid=vsGetSelected('mapa');if(!vid){alert('Elige un vendedor');return;}
+    const v=V.find(v=>v.id===vid);
+    showModal('Confirmar asignación',`Asignar ${sel.size} número(s) a ${v.nombre}`,()=>{
+      sel.forEach(k=>{if(!B[k]&&!ABON[k])B[k]={tipo:'vendedor',vid,pagado:false};});
+      saveAndSync();sel.clear();renderMapa();renderVendedores();
+    });
+  } else if(tipo==='individual'){
+    const cliente=document.getElementById('mapa-asig-cliente').value.trim();if(!cliente){alert('Ingresa el nombre');return;}
+    const desc=parseFloat(document.getElementById('mapa-asig-desc').value)||0;
+    showModal('Confirmar',`Asignar ${sel.size} número(s) individualmente a ${cliente}`,()=>{
+      sel.forEach(k=>{if(!B[k]&&!ABON[k])B[k]={tipo:'individual',cliente,descuento:desc,pagado:false};});
+      saveAndSync();sel.clear();renderMapa();
+    });
+  } else {
+    const cliente=document.getElementById('mapa-asig-cliente').value.trim();if(!cliente){alert('Ingresa el nombre');return;}
+    const desc=parseFloat(document.getElementById('mapa-asig-desc').value)||0;
+    const nums=[...sel];const base=nums.length*prec();const total=Math.max(0,base-desc);
+    showModal('Confirmar paquete',`${nums.length} número(s) como paquete para ${cliente}\nTotal: ${fmt(total)}`,()=>{
+      const paqId=Date.now().toString();
+      PAQ.push({id:paqId,cliente,nums,precioBase:base,descuento:desc,total,pagado:false});
+      nums.forEach(k=>{if(!B[k]&&!ABON[k])B[k]={tipo:'paquete',cliente,paqId,pagado:false};});
+      saveAndSync();sel.clear();renderMapa();
+    });
+  }
+}
+function confirmarAbonados(){
+  if(!sel.size){alert('Selecciona números primero');return;}
+  const numsSel=[...sel];
+  showModal('Marcar como abonados',`Marcar ${numsSel.length} número(s) como abonados permanentes. No afectan el sorteo actual.`,()=>{
+    const titular=document.getElementById('abon-titular-input').value.trim()||'Por asignar';
+    if(numsSel.length===1){
+      // Individual
+      const k=numsSel[0];
+      if(!ABON[k])ABON[k]={titular,confirmado:false};
+    } else {
+      // Paquete abonado
+      const abpaqId=Date.now().toString();
+      const numsValidos=numsSel.filter(k=>!ABON[k]);
+      if(!numsValidos.length){alert('Todos esos números ya están registrados como abonados');return;}
+      ABPAQ.push({id:abpaqId,titular,nums:numsValidos});
+      numsValidos.forEach(k=>{ABON[k]={titular,abpaqId,confirmado:false};});
+    }
+    saveAndSync();sel.clear();
+    const gc=document.getElementById('gold-count');if(gc)gc.textContent=0;
+    renderMapa();renderAbonados();
+  },'<div class="modal-field"><label>Nombre del titular</label><input id="abon-titular-input" placeholder="Ej: Juan García" style="width:100%"></div>','Marcar abonados');
+}
+function desasignarSel(){
+  if(!sel.size){alert('Selecciona números primero');return;}
+  showModal('Desasignar',`¿Liberar ${sel.size} número(s)?`,()=>{
+    sel.forEach(k=>{
+      if(B[k]&&B[k].tipo==='paquete'){const paq=PAQ.find(p=>p.id===B[k].paqId);if(paq){PAQ.splice(PAQ.indexOf(paq),1);paq.nums.forEach(n=>{delete B[n];});delete ABP[paq.id];}}
+      else{delete B[k];delete ABI[k];}
+    });
+    saveAndSync();sel.clear();document.getElementById('del-count').textContent=0;renderMapa();
+  });
+}
+function clearSel(){sel.clear();['del-count','gold-count'].forEach(id=>document.getElementById(id).textContent=0);renderMapa();}
+function updateSelBar(){
+  const bar=document.getElementById('sel-bar');
+  if(sel.size&&mapaMode==='asignar'){bar.style.display='flex';document.getElementById('sel-count-txt').textContent=sel.size;}
+  else bar.style.display='none';
+}
+function previewTexto(){
+  const items=parsearNums(document.getElementById('texto-nums').value);
+  document.getElementById('texto-preview').innerHTML=items.map(({k,raw,estado})=>{
+    const cls={ok:'prev-ok',dup:'prev-dup',inv:'prev-inv',ab:'prev-ab'}[estado];
+    const label={ok:k,dup:`${k}✗`,inv:`${raw}?`,ab:`${k}★`}[estado];
+    return`<span class="prev-tag ${cls}">${label}</span>`;
+  }).join('');
+}
+function confirmarTextoAsig(){
+  const items=parsearNums(document.getElementById('texto-nums').value);
+  const ok=items.filter(i=>i.estado==='ok');if(!ok.length){alert('No hay números válidos');return;}
+  const tipo=document.getElementById('texto-tipo').value;
+  const dup=items.filter(i=>i.estado==='dup').length;const inv=items.filter(i=>i.estado==='inv').length;
+  let res=`Se asignarán ${ok.length} número(s).`;
+  if(dup)res+=`\n${dup} ya ocupados (omitidos).`;if(inv)res+=`\n${inv} inválidos (omitidos).`;
+  if(tipo==='vendedor'){
+    const vid=vsGetSelected('texto');if(!vid){alert('Elige un vendedor');return;}
+    const v=V.find(v=>v.id===vid);
+    showModal('Asignación en bloque',res+`\nVendedor: ${v.nombre}`,()=>{
+      ok.forEach(({k})=>{B[k]={tipo:'vendedor',vid,pagado:false};});
+      saveAndSync();document.getElementById('texto-nums').value='';previewTexto();vsReset('texto');
+      if(document.getElementById('tab-mapa').classList.contains('active'))renderMapa();renderVendedores();
+    });
+  } else if(tipo==='individual'){
+    const cliente=document.getElementById('texto-cliente').value.trim();if(!cliente){alert('Ingresa el nombre');return;}
+    const desc=parseFloat(document.getElementById('texto-desc').value)||0;
+    showModal('Asignación en bloque',res,()=>{
+      ok.forEach(({k})=>{B[k]={tipo:'individual',cliente,descuento:desc,pagado:false};});
+      saveAndSync();document.getElementById('texto-nums').value='';previewTexto();
+      if(document.getElementById('tab-mapa').classList.contains('active'))renderMapa();
+    });
+  } else {
+    const cliente=document.getElementById('texto-cliente').value.trim();if(!cliente){alert('Ingresa el nombre');return;}
+    const desc=parseFloat(document.getElementById('texto-desc').value)||0;
+    const nums=ok.map(i=>i.k);const base=nums.length*prec();const total=Math.max(0,base-desc);
+    showModal('Paquete en bloque',res+`\nTotal: ${fmt(total)}`,()=>{
+      const paqId=Date.now().toString();
+      PAQ.push({id:paqId,cliente,nums,precioBase:base,descuento:desc,total,pagado:false});
+      nums.forEach(k=>{B[k]={tipo:'paquete',cliente,paqId,pagado:false};});
+      saveAndSync();document.getElementById('texto-nums').value='';previewTexto();
+      if(document.getElementById('tab-mapa').classList.contains('active'))renderMapa();
+    });
+  }
+}
+
+// ═══════════════════════════════ ABONOS
+function abonoRapidoAdmin(tipo,key,nombre){
+  showModal(`Registrar abono — ${nombre}`,'',()=>{
+    const monto=parseFloat(document.getElementById('ar-monto').value);
+    if(isNaN(monto)||monto<=0){alert('Monto inválido');return;}
+    const nota=document.getElementById('ar-nota').value.trim();
+    const abono={id:Date.now().toString(),monto,nota,fecha:today()};
+    if(tipo==='v'){if(!ABV[key])ABV[key]=[];ABV[key].push(abono);saveAndSync();checkPagosAutoV(parseInt(key));}
+    else if(tipo==='i'){if(!ABI[key])ABI[key]=[];ABI[key].push(abono);saveAndSync();checkPagosAutoInd(key);}
+    else if(tipo==='p'){if(!ABP[key])ABP[key]=[];ABP[key].push(abono);saveAndSync();checkPagosAutoPaq(key);}
+    renderAbonos();
+    setTimeout(()=>{const b=document.getElementById(`ab-body-${tipo}-${key}`);if(b)b.classList.add('open');},40);
+  },`<div class="modal-field"><label>Monto (€)</label><input id="ar-monto" type="number" min="0" placeholder="0,00"></div>
+     <div class="modal-field"><label>Método de pago</label><select id="ar-nota" style="width:100%"><option value="Efectivo">Efectivo</option><option value="Bizum">Bizum</option></select></div>`,'Registrar');
+}
+function renderPendientesConfirmacion(){
+  const cont=document.getElementById('pendientes-confirmacion');if(!cont)return;
+  const pendientes=[];
+  // Vendedores
+  V.forEach(v=>{
+    (ABV[v.id]||ABV[String(v.id)]||[]).filter(a=>a.pendiente).forEach(a=>{
+      pendientes.push({tipo:'v',id:v.id,nombre:v.nombre,abono:a});
+    });
+  });
+  // Individuales
+  Object.entries(B).filter(([,b])=>b.tipo==='individual').forEach(([k,b])=>{
+    (ABI[k]||[]).filter(a=>a.pendiente).forEach(a=>{
+      pendientes.push({tipo:'i',id:k,nombre:b.cliente,sub:`Boleta ${k}`,abono:a});
+    });
+  });
+  // Paquetes
+  PAQ.forEach(p=>{
+    (ABP[p.id]||[]).filter(a=>a.pendiente).forEach(a=>{
+      pendientes.push({tipo:'p',id:p.id,nombre:p.cliente,sub:`Paquete ×${p.nums.length}`,abono:a});
+    });
+  });
+  if(!pendientes.length){cont.innerHTML='';return;}
+  cont.innerHTML=`<div class="card" style="border-color:#d4a870;background:var(--amber-bg)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;flex-wrap:wrap;gap:8px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--amber)">⏳ Abonos pendientes de confirmación (${pendientes.length})</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-g" onclick="confirmarTodosPendientes()">✓ Confirmar todos</button>
+        <button class="btn btn-sm btn-d" onclick="rechazarTodosPendientes()">✕ Rechazar todos</button>
+      </div>
+    </div>
+    ${pendientes.map(({tipo,id,nombre,sub,abono})=>`
+      <div style="background:rgba(255,255,255,.6);border:1px solid #d4a870;border-radius:var(--r);padding:8px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:13px">
+        <div>
+          <span style="font-weight:700">${nombre}</span>
+          ${sub?`<span style="font-size:11px;color:var(--text2);margin-left:6px">${sub}</span>`:''}
+          <span style="font-family:var(--mono);font-weight:600;margin-left:10px">${fmt(abono.monto)}</span>
+          ${abono.nota?`<span class="badge ${abono.nota==='Bizum'?'bb':'bg'}" style="margin-left:6px">${abono.nota}</span>`:''}
+          <span style="font-size:11px;color:var(--text3);margin-left:8px;font-family:var(--mono)">${abono.fecha}</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-g" onclick="confirmarAbonoP('${tipo}','${id}','${abono.id}')">✓ Confirmar</button>
+          <button class="btn btn-sm btn-d" onclick="rechazarAbonoP('${tipo}','${id}','${abono.id}')">✕ Rechazar</button>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+function rechazarTodosPendientes(){
+  const total=[...Object.values(ABV),...Object.values(ABI),...Object.values(ABP)].flat().filter(a=>a.pendiente).length;
+  showModal('Rechazar todos',`¿Eliminar ${total} abono(s) pendiente(s)?`,()=>{
+    Object.keys(ABV).forEach(k=>{ABV[k]=(ABV[k]||[]).filter(a=>!a.pendiente);});
+    Object.keys(ABI).forEach(k=>{ABI[k]=(ABI[k]||[]).filter(a=>!a.pendiente);});
+    Object.keys(ABP).forEach(k=>{ABP[k]=(ABP[k]||[]).filter(a=>!a.pendiente);});
+    saveAndSync();renderAbonos();
+  });
+}
+function confirmarTodosPendientes(){
+  const total=[...Object.values(ABV),...Object.values(ABI),...Object.values(ABP)].flat().filter(a=>a.pendiente).length;
+  showModal('Confirmar todos',`¿Confirmar ${total} abono(s) pendiente(s)?`,()=>{
+    V.forEach(v=>{(ABV[v.id]||ABV[String(v.id)]||[]).forEach(a=>{if(a.pendiente)a.pendiente=false;});checkPagosAutoV(v.id);});
+    Object.keys(ABI).forEach(k=>{(ABI[k]||[]).forEach(a=>{if(a.pendiente)a.pendiente=false;});checkPagosAutoInd(k);});
+    Object.keys(ABP).forEach(id=>{(ABP[id]||[]).forEach(a=>{if(a.pendiente)a.pendiente=false;});checkPagosAutoPaq(id);});
+    saveAndSync();renderAbonos();
+  });
+}
+function confirmarAbonoP(tipo,id,abId){
+  if(tipo==='v'){
+    if(!ABV[id])return;
+    const ab=ABV[id].find(a=>a.id===abId);if(!ab)return;
+    ab.pendiente=false;saveAndSync();checkPagosAutoV(parseInt(id));
+  } else if(tipo==='i'){
+    if(!ABI[id])return;
+    const ab=ABI[id].find(a=>a.id===abId);if(!ab)return;
+    ab.pendiente=false;saveAndSync();checkPagosAutoInd(id);
+  } else if(tipo==='p'){
+    if(!ABP[id])return;
+    const ab=ABP[id].find(a=>a.id===abId);if(!ab)return;
+    ab.pendiente=false;saveAndSync();checkPagosAutoPaq(id);
+  }
+  renderAbonos();
+}
+function rechazarAbonoP(tipo,id,abId){
+  showModal('Rechazar abono','¿Eliminar este abono pendiente?',()=>{
+    if(tipo==='v')ABV[id]=(ABV[id]||[]).filter(a=>a.id!==abId);
+    else if(tipo==='i')ABI[id]=(ABI[id]||[]).filter(a=>a.id!==abId);
+    else if(tipo==='p')ABP[id]=(ABP[id]||[]).filter(a=>a.id!==abId);
+    saveAndSync();renderAbonos();
+  });
+}
+function abonoCardHtml(key,nombre,totalAPagar,abonosArr,tipo,extraInfo){
+  const totalAb=abonosArr.filter(x=>!x.pendiente).reduce((a,x)=>a+x.monto,0);
+  const saldo=totalAPagar-totalAb;const alDia=saldo<=0&&totalAPagar>0;
+  return`<div class="abono-card">
+    <div style="padding:.85rem 1.25rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;background:var(--surface);border-radius:var(--rl) var(--rl) 0 0">
+      <div style="cursor:pointer;flex:1" onclick="toggleAbonoCard('${tipo}-${key}')">
+        <span style="font-weight:700;font-size:14px">${nombre}</span>
+        ${extraInfo?`<span style="font-size:12px;color:var(--text2);margin-left:8px">${extraInfo}</span>`:''}
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-g" onclick="abonoRapidoAdmin('${tipo}','${key}','${nombre.replace(/'/g,"\\'")}')">+ Abono</button>
+        <div style="text-align:right;cursor:pointer" onclick="toggleAbonoCard('${tipo}-${key}')">
+          <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:${alDia?'var(--accent)':'var(--amber)'}">${alDia?'✓ Al día':fmt(saldo)+' pendiente'}</div>
+          <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Total: ${fmt(totalAPagar)} · Abonado: ${fmt(totalAb)}</div>
+        </div>
+      </div>
+    </div>
+    <div class="abono-body" id="ab-body-${tipo}-${key}">
+      <div class="saldo-box">
+        <div class="saldo-item"><div class="saldo-label">Total a pagar</div><div class="saldo-val">${fmt(totalAPagar)}</div></div>
+        <div class="saldo-item"><div class="saldo-label">Total abonado</div><div class="saldo-val" style="color:var(--accent)">${fmt(totalAb)}</div></div>
+        <div class="saldo-item" style="border-color:${alDia?'#aacab6':'#d4a870'};background:${alDia?'var(--accent-bg)':'var(--amber-bg)'}">
+          <div class="saldo-label">Saldo</div>
+          <div class="saldo-val" style="color:${alDia?'var(--accent)':'var(--amber)'}">${alDia?'Al día ✓':fmt(saldo)}</div>
+        </div>
+        <div class="saldo-item"><div class="saldo-label">Abonos</div><div class="saldo-val">${abonosArr.length}</div></div>
+      </div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:5px">Historial</div>
+      <div class="abono-list">
+        ${abonosArr.length?abonosArr.slice().reverse().map(ab=>`
+          <div class="abono-row">
+            <div><span style="font-family:var(--mono);font-weight:600">${fmt(ab.monto)}</span>
+              ${ab.nota?`<span style="font-size:12px;color:var(--text2);margin-left:8px">${ab.nota}</span>`:''}</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="abono-fecha">${ab.fecha}</span>
+              <button class="btn btn-sm btn-d" onclick="removeAbonoGen('${tipo}','${key}','${ab.id}')">×</button>
+            </div>
+          </div>`).join(''):'<div style="font-size:13px;color:var(--text3);padding:.4rem 0">Sin abonos</div>'}
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:.75rem;margin-top:.5rem">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Registrar abono</div>
+        <div class="fr">
+          <input type="number" id="abm-${tipo}-${key}" placeholder="Monto (€)" style="flex:1;min-width:110px">
+          <select id="abn-${tipo}-${key}" style="flex:1;min-width:110px"><option value="Efectivo">Efectivo</option><option value="Bizum">Bizum</option></select>
+          <button class="btn btn-g" onclick="addAbonoGen('${tipo}','${key}')">+ Registrar</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function toggleAbonoCard(id){document.getElementById('ab-body-'+id).classList.toggle('open');}
+function addAbonoGen(tipo,key){
+  const mEl=document.getElementById(`abm-${tipo}-${key}`);
+  const monto=parseFloat(mEl.value);if(isNaN(monto)||monto<=0){alert('Monto inválido');return;}
+  const nota=document.getElementById(`abn-${tipo}-${key}`).value.trim();
+  const abono={id:Date.now().toString(),monto,nota,fecha:today()};
+  if(tipo==='v'){if(!ABV[key])ABV[key]=[];ABV[key].push(abono);save();checkPagosAutoV(parseInt(key));syncSave();}
+  else if(tipo==='i'){if(!ABI[key])ABI[key]=[];ABI[key].push(abono);save();checkPagosAutoInd(key);syncSave();}
+  else if(tipo==='p'){if(!ABP[key])ABP[key]=[];ABP[key].push(abono);save();checkPagosAutoPaq(key);syncSave();}
+  mEl.value='';document.getElementById(`abn-${tipo}-${key}`).value='';
+  renderAbonos();
+  setTimeout(()=>{const b=document.getElementById(`ab-body-${tipo}-${key}`);if(b)b.classList.add('open');},40);
+}
+function removeAbonoGen(tipo,key,abId){
+  showModal('Eliminar abono','¿Eliminar este abono?',()=>{
+    if(tipo==='v'){ABV[key]=(ABV[key]||[]).filter(a=>a.id!==abId);save();checkPagosAutoV(parseInt(key));syncSave();}
+    else if(tipo==='i'){ABI[key]=(ABI[key]||[]).filter(a=>a.id!==abId);save();checkPagosAutoInd(key);syncSave();}
+    else if(tipo==='p'){ABP[key]=(ABP[key]||[]).filter(a=>a.id!==abId);save();checkPagosAutoPaq(key);syncSave();}
+    renderAbonos();
+    setTimeout(()=>{const b=document.getElementById(`ab-body-${tipo}-${key}`);if(b)b.classList.add('open');},40);
+  });
+}
+function renderAbonos(){
+  renderPendientesConfirmacion();
+  const cont=document.getElementById('abonos-lista');
+  const buscar=(document.getElementById('abonos-buscar')||{}).value?.toLowerCase()||'';
+  if(abonoTab==='vendedores'){
+    if(!V.length){cont.innerHTML='<div class="empty">Sin vendedores</div>';return;}
+    const lista=sortV(V).filter(v=>!buscar||v.nombre.toLowerCase().includes(buscar));
+    cont.innerHTML=lista.map(v=>{const{neto}=netoV(v);return abonoCardHtml(v.id,v.nombre,neto,ABV[v.id]||[],'v',v.telefono||'');}).join('')||'<div class="empty">Sin coincidencias</div>';
+  } else if(abonoTab==='individuales'){
+    const ind=Object.entries(B).filter(([,b])=>b.tipo==='individual').sort(([,a],[,b])=>a.cliente.localeCompare(b.cliente));
+    const filtrados=ind.filter(([,b])=>!buscar||b.cliente.toLowerCase().includes(buscar));
+    if(!filtrados.length){cont.innerHTML='<div class="empty">Sin boletas individuales</div>';return;}
+    cont.innerHTML=filtrados.map(([k,b])=>abonoCardHtml(k,b.cliente,prec()-(b.descuento||0),ABI[k]||[],'i',`Boleta ${k}`)).join('');
+  } else {
+    const lista=[...PAQ].sort((a,b)=>a.cliente.localeCompare(b.cliente)).filter(p=>!buscar||p.cliente.toLowerCase().includes(buscar));
+    if(!lista.length){cont.innerHTML='<div class="empty">Sin paquetes</div>';return;}
+    cont.innerHTML=lista.map(p=>abonoCardHtml(p.id,p.cliente,p.total,ABP[p.id]||[],'p',`Paquete ×${p.nums.length} · ${p.nums.join(', ')}`)).join('');
+  }
+}
+
+// ═══════════════════════════════ DINERO POR RECOGER
+function pagoRealizado(tipo,id,nombre,saldo){
+  showModal(`¿Pago realizado? — ${nombre}`,`Saldo pendiente: ${fmt(saldo)}`,()=>{
+    const metodo=document.getElementById('pago-metodo').value;
+    const abono={id:Date.now().toString(),monto:saldo,nota:metodo,fecha:today(),pendiente:true};
+    if(tipo==='v'){const key=String(id);if(!ABV[key])ABV[key]=[];ABV[key].push(abono);}
+    else if(tipo==='i'){if(!ABI[id])ABI[id]=[];ABI[id].push(abono);}
+    else if(tipo==='p'){if(!ABP[id])ABP[id]=[];ABP[id].push(abono);}
+    saveAndSync();renderDinero();
+    showToast(`✓ Abono de ${fmt(saldo)} registrado — pendiente de confirmación`);
+  },`<div class="modal-field"><label>Método de pago</label>
+     <select id="pago-metodo"><option value="Efectivo">Efectivo</option><option value="Bizum">Bizum</option></select></div>`,'Confirmar pago');
+}
+function togglePaqDinero(paqId){
+  const paq=PAQ.find(p=>p.id===paqId);if(!paq)return;
+  paq.pagado=!paq.pagado;paq.nums.forEach(n=>{if(B[n])B[n].pagado=paq.pagado;});
+  saveAndSync();renderDinero();renderDirectas();
+}
+function toggleIndDinero(k){if(!B[k])return;B[k].pagado=!B[k].pagado;saveAndSync();renderDinero();renderDirectas();}
+function renderDinero(){
+  const cont=document.getElementById('dinero-contenido');
+  const buscar=(document.getElementById('dinero-buscar')||{}).value?.toLowerCase()||'';
+  const filtroE=(document.getElementById('dinero-filtro-estado')||{}).value||'';
+  if(dineroTab==='vendedores'){
+    if(!V.length){cont.innerHTML='<div class="empty">Sin vendedores</div>';return;}
+    let lista=sortV(V);
+    if(buscar)lista=lista.filter(v=>v.nombre.toLowerCase().includes(buscar));
+    lista=lista.filter(v=>{const{neto}=netoV(v);const ab=(ABV[v.id]||[]).reduce((a,x)=>a+x.monto,0);const saldo=neto-ab;if(filtroE==='pendiente')return saldo>0;if(filtroE==='aldia')return saldo<=0;return true;});
+    const totNeto=lista.reduce((a,v)=>a+netoV(v).neto,0);
+    const totAb=lista.reduce((a,v)=>a+(ABV[v.id]||[]).reduce((b,x)=>b+x.monto,0),0);
+    const totSaldo=Math.max(0,totNeto-totAb);
+    // Solo mostrar los que tienen saldo pendiente
+    const listaPend=lista.filter(v=>{const{neto}=netoV(v);const ab=(ABV[v.id]||[]).reduce((a,x)=>a+x.monto,0);return neto-ab>0;});
+    if(!listaPend.length){cont.innerHTML='<div class="card"><div class="empty">🎉 No hay saldos pendientes</div></div>';return;}
+    const totPend=listaPend.reduce((s,v)=>{const{neto}=netoV(v);const ab=(ABV[v.id]||[]).reduce((a,x)=>a+x.monto,0);return s+Math.max(0,neto-ab);},0);
+    cont.innerHTML=`<div class="card"><table>
+      <thead><tr><th>Vendedor</th><th>Boletas</th><th>Neto</th><th>Abonado</th><th>Saldo</th><th></th></tr></thead>
+      <tbody>${listaPend.map(v=>{const{neto,count}=netoV(v);const ab=(ABV[v.id]||[]).reduce((a,x)=>a+x.monto,0);const saldo=Math.max(0,neto-ab);
+        return`<tr><td>${v.nombre}${v.telefono?`<br><span style="font-size:11px;color:var(--text3);font-family:var(--mono)">${v.telefono}</span>`:''}</td>
+          <td><span class="badge bp">${count}</span></td>
+          <td style="font-family:var(--mono)">${fmt(neto)}</td>
+          <td style="font-family:var(--mono);color:var(--accent)">${fmt(ab)}</td>
+          <td class="saldo-pend">${fmt(saldo)}</td>
+          <td><button class="btn btn-sm btn-g" onclick="pagoRealizado('v',${v.id},this.dataset.nombre,${saldo})" data-nombre="${v.nombre.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}">¿Pago realizado?</button></td></tr>`;
+      }).join('')}
+      <tr style="border-top:2px solid var(--border);background:var(--bg)">
+        <td colspan="4" style="font-weight:700">TOTAL PENDIENTE</td>
+        <td class="saldo-pend">${fmt(totPend)}</td><td></td>
+      </tr></tbody></table></div>`;
+  } else if(dineroTab==='paquetes'){
+    let lista=[...PAQ].sort((a,b)=>a.cliente.localeCompare(b.cliente));
+    if(buscar)lista=lista.filter(p=>p.cliente.toLowerCase().includes(buscar));
+    lista=lista.filter(p=>{const ab=(ABP[p.id]||[]).reduce((a,x)=>a+x.monto,0);const saldo=p.total-ab;if(filtroE==='pendiente')return saldo>0;if(filtroE==='aldia')return saldo<=0;return true;});
+    const listaPendPaq=lista.filter(p=>{const ab=(ABP[p.id]||[]).reduce((a,x)=>a+x.monto,0);return p.total-ab>0;});
+    if(!listaPendPaq.length){cont.innerHTML='<div class="card"><div class="empty">🎉 No hay saldos pendientes</div></div>';return;}
+    const totPendPaq=listaPendPaq.reduce((s,p)=>{const ab=(ABP[p.id]||[]).reduce((a,x)=>a+x.monto,0);return s+Math.max(0,p.total-ab);},0);
+    cont.innerHTML=`<div class="card"><table>
+      <thead><tr><th>Comprador</th><th>Números</th><th>Total</th><th>Abonado</th><th>Saldo</th><th></th></tr></thead>
+      <tbody>${listaPendPaq.map(p=>{const ab=(ABP[p.id]||[]).reduce((a,x)=>a+x.monto,0);const saldo=Math.max(0,p.total-ab);
+        return`<tr><td>${p.cliente}</td><td style="font-family:var(--mono);font-size:11px">${p.nums.join(', ')}</td>
+          <td style="font-family:var(--mono)">${fmt(p.total)}</td>
+          <td style="font-family:var(--mono);color:var(--accent)">${fmt(ab)}</td>
+          <td class="saldo-pend">${fmt(saldo)}</td>
+          <td><button class="btn btn-sm btn-g" onclick="pagoRealizado('p','${p.id}',this.dataset.nombre,${saldo})" data-nombre="${p.cliente.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}">¿Pago realizado?</button></td></tr>`;
+      }).join('')}
+      <tr style="border-top:2px solid var(--border);background:var(--bg)">
+        <td colspan="4" style="font-weight:700">TOTAL PENDIENTE</td>
+        <td class="saldo-pend">${fmt(totPendPaq)}</td><td></td>
+      </tr></tbody></table></div>`;
+  } else {
+    let lista=Object.entries(B).filter(([,b])=>b.tipo==='individual').sort(([,a],[,b])=>a.cliente.localeCompare(b.cliente));
+    if(buscar)lista=lista.filter(([,b])=>b.cliente.toLowerCase().includes(buscar));
+    lista=lista.filter(([k,b])=>{const total=prec()-(b.descuento||0);const ab=(ABI[k]||[]).reduce((a,x)=>a+x.monto,0);const saldo=total-ab;if(filtroE==='pendiente')return saldo>0;if(filtroE==='aldia')return saldo<=0;return true;});
+    const listaPendInd=lista.filter(([k])=>{const ab=(ABI[k]||[]).reduce((a,x)=>a+x.monto,0);const t=prec()-(B[k].descuento||0);return t-ab>0;});
+    if(!listaPendInd.length){cont.innerHTML='<div class="card"><div class="empty">🎉 No hay saldos pendientes</div></div>';return;}
+    const totPendInd=listaPendInd.reduce((s,[k,b])=>{const ab=(ABI[k]||[]).reduce((a,x)=>a+x.monto,0);const t=prec()-(b.descuento||0);return s+Math.max(0,t-ab);},0);
+    cont.innerHTML=`<div class="card"><table>
+      <thead><tr><th>Número</th><th>Cliente</th><th>Total</th><th>Abonado</th><th>Saldo</th><th></th></tr></thead>
+      <tbody>${listaPendInd.map(([k,b])=>{const total=prec()-(b.descuento||0);const ab=(ABI[k]||[]).reduce((a,x)=>a+x.monto,0);const saldo=Math.max(0,total-ab);
+        return`<tr><td style="font-family:var(--mono);font-weight:700">${k}</td><td>${b.cliente}</td>
+          <td style="font-family:var(--mono)">${fmt(total)}</td>
+          <td style="font-family:var(--mono);color:var(--accent)">${fmt(ab)}</td>
+          <td class="saldo-pend">${fmt(saldo)}</td>
+          <td><button class="btn btn-sm btn-g" onclick="pagoRealizado('i','${k}',this.dataset.nombre,${saldo})" data-nombre="${b.cliente.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}">¿Pago realizado?</button></td></tr>`;
+      }).join('')}
+      <tr style="border-top:2px solid var(--border);background:var(--bg)">
+        <td colspan="4" style="font-weight:700">TOTAL PENDIENTE</td>
+        <td class="saldo-pend">${fmt(totPendInd)}</td><td></td>
+      </tr></tbody></table></div>`;
+  }
+}
+
+// ═══════════════════════════════ DASHBOARD
+function renderDash(){
+  const total=1000;
+  // Abonados por confirmar = solo los que no están confirmados en RC&R y no descartados
+  const abonPorConfirmar=Object.keys(ABON).filter(k=>!ABON[k].confirmado&&!ABON[k].noConfirmar).length;
+  const abonCountReal=abonPorConfirmar;
+  const numV=Object.values(B).filter(b=>b.tipo==='vendedor').length;
+  const numInd=Object.values(B).filter(b=>b.tipo==='individual').length;
+  const numPaqNums=PAQ.reduce((a,p)=>a+p.nums.length,0);
+  // Libres = no asignados Y no abonados pendientes de confirmar
+  let libre=0; for(let i=0;i<1000;i++){const k=pad(i);if(!B[k]&&(!ABON[k]||ABON[k].noConfirmar))libre++;}
+  const saldoV=V.reduce((a,v)=>{const{neto}=netoV(v);const ab=(ABV[v.id]||[]).reduce((b,x)=>b+x.monto,0);return a+Math.max(0,neto-ab);},0);
+  const saldoPaq=PAQ.reduce((a,p)=>{const ab=(ABP[p.id]||[]).reduce((b,x)=>b+x.monto,0);return a+Math.max(0,p.total-ab);},0);
+  const saldoInd=Object.entries(B).filter(([,b])=>b.tipo==='individual').reduce((a,[k,b])=>{const tot=prec()-(b.descuento||0);const ab=(ABI[k]||[]).reduce((b,x)=>b+x.monto,0);return a+Math.max(0,tot-ab);},0);
+  const saldoTotal=saldoV+saldoPaq+saldoInd;
+  const totalAbV=Object.values(ABV).flat().filter(x=>!x.pendiente).reduce((a,x)=>a+x.monto,0);
+  const totalAbI=Object.values(ABI).flat().filter(x=>!x.pendiente).reduce((a,x)=>a+x.monto,0);
+  const totalAbP=Object.values(ABP).flat().filter(x=>!x.pendiente).reduce((a,x)=>a+x.monto,0);
+  const totalAb=totalAbV+totalAbI+totalAbP;
+  const pendAbV=Object.values(ABV).flat().filter(x=>x.pendiente).reduce((a,x)=>a+x.monto,0);
+  const pendAbI=Object.values(ABI).flat().filter(x=>x.pendiente).reduce((a,x)=>a+x.monto,0);
+  const pendAbP=Object.values(ABP).flat().filter(x=>x.pendiente).reduce((a,x)=>a+x.monto,0);
+  const totalPendiente=pendAbV+pendAbI+pendAbP;
+  const recV=V.reduce((a,v)=>{const p=Object.entries(B).filter(([,b])=>b.tipo==='vendedor'&&b.vid===v.id&&b.pagado).length;return a+p*prec()*(1-v.comision/100);},0);
+  const recPaq=PAQ.filter(p=>p.pagado).reduce((a,p)=>a+p.total,0);
+  const recInd=Object.entries(B).filter(([,b])=>b.tipo==='individual'&&b.pagado).reduce((a,[,b])=>a+(prec()-(b.descuento||0)),0);
+
+  document.getElementById('metrics').innerHTML=`
+    <div class="met"><div class="ml">Asignados vendedores</div><div class="mv">${numV}</div><div class="ms">de 1000 números</div></div>
+    <div class="met teal"><div class="ml">Vendidas RC&amp;R</div><div class="mv">${numInd+numPaqNums}</div><div class="ms">Individuales: ${numInd} · Paquetes: ${numPaqNums}</div></div>
+    <div class="met"><div class="ml">Boletas libres</div><div class="mv">${libre}</div><div class="ms">${abonCountReal} abonados por confirmar</div></div>
+    <div class="met amber"><div class="ml">Saldo por recoger</div><div class="mv" style="font-size:16px">${fmt(saldoTotal)}</div><div class="ms">total pendiente</div></div>
+    <div class="met green"><div class="ml">Total recaudado</div><div class="mv" style="font-size:16px">${fmt(totalAb)}</div><div class="ms">abonos confirmados</div>${totalPendiente>0?`<div style="margin-top:5px;font-size:11px;font-family:var(--mono);color:var(--amber);font-weight:600">+ ${fmt(totalPendiente)} por confirmar</div>`:''}</div>
+  `;
+
+  const pctA=Math.round((total-libre)/total*100);
+  // Barras de progreso por vendedor para estado general
+  const vendBars = sortV(V).map(v=>{
+    const{neto,count}=netoV(v);
+    const ab=(ABV[v.id]||[]).reduce((a,x)=>a+x.monto,0);
+    const saldo=Math.max(0,neto-ab);
+    const pct2=neto>0?Math.min(100,Math.round(ab/neto*100)):0;
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span style="font-weight:600">${v.nombre} <span style="font-weight:400;color:var(--text3)">(${count} bol.)</span></span>
+        <span style="font-family:var(--mono);font-size:11px;color:${saldo<=0?'var(--accent)':'var(--amber)'}">${saldo<=0?'Al día ✓':fmt(saldo)+' pend.'}</span>
+      </div>
+      <div class="prog-wrap"><div class="prog-fill" style="width:${pct2}%;background:var(--accent)"></div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('dash-e').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:1.25rem">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.7rem 1rem">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Vendedores</div>
+        <div style="font-size:22px;font-weight:700;font-family:var(--mono)">${V.length}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">${numV} boletas asignadas</div>
+      </div>
+      <div style="background:var(--teal-bg);border:1px solid #8acac8;border-radius:var(--r);padding:.7rem 1rem">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--teal);margin-bottom:4px">RC&R</div>
+        <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--teal)">${numInd+numPaqNums}</div>
+        <div style="font-size:11px;color:var(--teal);font-family:var(--mono)">Ind: ${numInd} · Paq: ${numPaqNums}</div>
+      </div>
+      <div style="background:var(--gold-bg);border:1px solid #c8a830;border-radius:var(--r);padding:.7rem 1rem">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Por confirmar</div>
+        <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--gold)">${abonPorConfirmar}</div>
+        <div style="font-size:11px;color:var(--gold);font-family:var(--mono)">abonados</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.7rem 1rem">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Libres</div>
+        <div style="font-size:22px;font-weight:700;font-family:var(--mono)">${libre}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">de 1000</div>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span style="color:var(--text2);font-weight:600">Boletería asignada</span>
+        <span style="font-weight:700;font-family:var(--mono)">${pctA}%</span>
+      </div>
+      <div class="prog-wrap" style="height:7px"><div class="prog-fill" style="width:${pctA}%;background:var(--amber)"></div></div>
+    </div>
+    ${vendBars?`<div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Saldo por vendedor</div>${vendBars}`:''}
+  `;
+}
+
+// ═══════════════════════════════ ADMON
+function renderAdmon(){
+  refreshSelects();
+  const sp=document.getElementById('s-precio-actual');if(sp)sp.textContent=`Precio actual: ${fmt(prec())} por boleta`;
+  const snom=document.getElementById('s-nombre');if(snom)snom.value=CFG.nombre||'';
+  const spre=document.getElementById('s-precio');if(spre)spre.value=CFG.precio||50;
+  const snum=document.getElementById('s-num');if(snum&&CFG.ganador!==null)snum.value=CFG.ganador;
+  renderResultadoSorteo();
+}
+function renderResultadoSorteo(){
+  const res=document.getElementById('resultado-sorteo');
+  if(CFG.ganador===null){res.innerHTML='';return;}
+  const k=pad(parseInt(CFG.ganador));const isAbon=!!ABON[k];const b=B[k];
+  if(isAbon&&!b){res.innerHTML=`<div class="winner-box"><div class="winner-label">Número abonado</div><div class="winner-number">${k}</div><div class="winner-label">Titular</div><div class="winner-name">${ABON[k].titular}</div></div>`;return;}
+  if(!b){res.innerHTML=`<div class="card" style="text-align:center;padding:2rem"><div style="font-size:48px;font-family:var(--mono);font-weight:700">${k}</div><div style="color:var(--text3);margin-top:.5rem">Número libre</div></div>`;return;}
+  let nombre='',tipo='',tel='';
+  if(b.tipo==='vendedor'){const v=V.find(v=>v.id===b.vid);nombre=v?v.nombre:'?';tipo='Vendedor';tel=v?v.telefono:'';}
+  else if(b.tipo==='paquete'){nombre=b.cliente;tipo='Paquete';}
+  else{nombre=b.cliente;tipo='Individual';}
+  res.innerHTML=`<div class="winner-box">
+    <div class="winner-label">${tipo}</div>
+    <div class="winner-number">${k}</div>
+    <div class="winner-label">Ganador</div>
+    <div class="winner-name">${nombre}</div>
+    ${tel?`<div style="font-size:13px;opacity:.6;margin-top:4px;font-family:var(--mono)">${tel}</div>`:''}
+    <div style="margin-top:12px;font-size:12px;opacity:.55">${b.pagado?'✓ Boleta pagada':'⚠ Boleta aún no pagada'}</div>
+  </div>`;
+}
+function registrarGanador(){const n=parseInt(document.getElementById('s-num').value);if(isNaN(n)||n<0||n>999){alert('000–999');return;}CFG.ganador=pad(n);saveAndSync();renderResultadoSorteo();}
+function borrarGanador(){CFG.ganador=null;document.getElementById('s-num').value='';saveAndSync();renderResultadoSorteo();}
+function guardarNombre(){const n=document.getElementById('s-nombre').value.trim();if(!n)return;CFG.nombre=n;saveAndSync();refreshSelects();}
+function guardarPrecio(){const p=parseFloat(document.getElementById('s-precio').value);if(isNaN(p)||p<=0){alert('Precio inválido');return;}CFG.precio=p;saveAndSync();refreshSelects();alert(`Precio actualizado: ${fmt(p)} por boleta`);}
+function nuevoSorteo(){
+  showModal('⚠ Iniciar nuevo sorteo','Esto borrará todas las boletas y abonos. Vendedores y números abonados permanecerán siempre. ¿Continuar?',()=>{
+    showModal('Confirmar nuevo sorteo','Esta acción no se puede deshacer.',()=>{
+      Object.keys(ABON).forEach(k=>{ABON[k].confirmado=false;ABON[k].noConfirmar=false;ABON[k].liberado=false;});
+      B={};PAQ={};PAQ=[];ABV={};ABI={};ABP={};CFG.ganador=null;
+      saveAndSync();refreshSelects();renderDash();
+      alert('Nuevo sorteo iniciado. Vendedores y números abonados conservados.');
+    });
+  });
+}
+
+// ═══════════════════════════════ EXPORTAR
+function dl(content,filename,type){const blob=new Blob(['\uFEFF'+content],{type});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();}
+function exportarCSV(){
+  let csv='Número,Tipo,Titular,Teléfono,Precio base,Descuento,Total,Estado\n';
+  for(let i=0;i<1000;i++){
+    const k=pad(i);
+    if(ABON[k]){csv+=`${k},Abonado,"${ABON[k].titular}",,,,${ABON[k].confirmado?'Confirmado':'Por confirmar'}\n`;continue;}
+    const b=B[k];if(!b){csv+=`${k},Libre,,,,,,\n`;continue;}
+    if(b.tipo==='vendedor'){const v=V.find(v=>v.id===b.vid);const p=prec();const com=p*(v?v.comision/100:0);csv+=`${k},Vendedor,"${v?v.nombre:''}","${v?v.telefono:''}",${p},${com.toFixed(2)},${(p-com).toFixed(2)},${b.pagado?'Pagado':'Pendiente'}\n`;}
+    else if(b.tipo==='paquete'){const paq=PAQ.find(p=>p.id===b.paqId);csv+=`${k},Paquete,"${b.cliente}",,${prec()},${paq?(paq.descuento/paq.nums.length).toFixed(2):0},${paq?(paq.total/paq.nums.length).toFixed(2):prec()},${b.pagado?'Pagado':'Pendiente'}\n`;}
+    else{const p=prec();const d=b.descuento||0;csv+=`${k},Individual,"${b.cliente}",,${p},${d},${p-d},${b.pagado?'Pagado':'Pendiente'}\n`;}
+  }
+  dl(csv,(CFG.nombre||'sorteo')+'.csv','text/csv;charset=utf-8;');
+}
+function exportarSimple(){
+  let csv='Número,Titular\n';
+  for(let i=0;i<1000;i++){
+    const k=pad(i);
+    if(ABON[k]){csv+=`${k},"★ ${ABON[k].titular} (abonado${ABON[k].confirmado?' - confirmado':''})"\n`;continue;}
+    const b=B[k];if(!b){csv+=`${k},LIBRE\n`;continue;}
+    let nombre='';
+    if(b.tipo==='vendedor'){const v=V.find(v=>v.id===b.vid);nombre=v?v.nombre:'?';}
+    else if(b.tipo==='paquete')nombre=`Paquete: ${b.cliente}`;
+    else nombre=b.cliente;
+    csv+=`${k},"${nombre}"\n`;
+  }
+  dl(csv,(CFG.nombre||'sorteo')+'_simple.csv','text/csv;charset=utf-8;');
+}
+function exportarJSON(){
+  const blob=new Blob([JSON.stringify({V,B,PAQ,ABV,ABI,ABP,ABON,ABPAQ,CFG},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${CFG.nombre||'sorteo'}_respaldo_${new Date().toISOString().slice(0,16).replace('T','_').replace(':','-')}.json`;a.click();
+}
+function importarJSON(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{const d=JSON.parse(ev.target.result);
+      showModal('Importar respaldo','¿Reemplazar todos los datos con los del archivo?',()=>{
+        V=d.V||[];B=d.B||{};PAQ=d.PAQ||[];ABV=d.ABV||{};ABI=d.ABI||{};ABP=d.ABP||{};
+        ABON=d.ABON||{};ABPAQ=d.ABPAQ||[];CFG=d.CFG||{nombre:'Sorteo',precio:50,ganador:null,pass:'1234'};
+        saveAndSync();refreshSelects();renderDash();applyProfile();
+      });
+    }catch{alert('Error al leer el archivo');}
+  };reader.readAsText(file);e.target.value='';
+}
+
+// ═══════════════════════════════ SYNC CON GOOGLE SHEETS
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw9RjqwWWVrKzK2ac4B6WiFimQSMOooHmVqE73-sHF5MHT4ZThqUu3CG3BcKuTtXFJfSA/exec';
+
+function showSyncStatus(msg, color){
+  let el = document.getElementById('sync-status');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.color = color || 'var(--text3)';
+}
+
+async function syncSave(){
+  showSyncStatus('Guardando en la nube...','var(--amber)');
+  try{
+    const payload={V,B,PAQ,ABV,ABI,ABP,ABON,ABPAQ,CFG};
+    const res=await fetch(GAS_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'save',payload})
+    });
+    const text=await res.text();
+    let ok=false;
+    try{ok=JSON.parse(text).ok;}catch(e){}
+    if(ok)showSyncStatus('✓ Guardado en la nube — '+today(),'var(--accent)');
+    else showSyncStatus('⚠ Error al guardar','var(--red)');
+  }catch(e){
+    showSyncStatus('⚠ Sin conexión — datos guardados localmente','var(--amber)');
+  }
+}
+
+async function syncLoad(){
+  showSyncStatus('Cargando datos de la nube...','var(--amber)');
+  try{
+    // Timeout de 10 segundos para no quedarse colgado
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),10000);
+    const res=await fetch(GAS_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'load'}),
+      signal:controller.signal
+    });
+    clearTimeout(timer);
+    const text=await res.text();
+    if(!text||text==='{}'){showSyncStatus('Nube vacía — usando datos locales','var(--text3)');return;}
+    const d=JSON.parse(text);
+    if(d.V!==undefined){
+      V=d.V||[];B=d.B||{};PAQ=d.PAQ||[];ABV=d.ABV||{};ABI=d.ABI||{};ABP=d.ABP||{};
+      ABON=d.ABON||{};ABPAQ=d.ABPAQ||[];CFG=d.CFG||{nombre:'Sorteo',precio:50,ganador:null,pass:'1234'};
+      save();showSyncStatus('✓ Datos cargados de la nube — '+today(),'var(--accent)');
+    }
+  }catch(e){
+    if(e.name==='AbortError'){
+      showSyncStatus('⚠ Tiempo de espera agotado — usando datos locales','var(--amber)');
+    } else {
+      showSyncStatus('⚠ Sin conexión — usando datos locales','var(--amber)');
+    }
+  }
+}
+
+// Sobreescribir save para que también sincronice
+const _saveLocal = save;
+const saveAndSync = () => { _saveLocal(); syncSave(); };
+
+
+// ═══════════════════════════════ FUNCIONES NUEVAS
+function editarNumsAbonado(abpaqId){
+  const abpaq=ABPAQ.find(p=>p.id===abpaqId);if(!abpaq)return;
+  showModal(`Editar números — ${abpaq.titular}`,'Escribe los nuevos números. Los que elimines quedarán libres de abonado.',()=>{
+    const raw=document.getElementById('edit-abpaq-nums').value;
+    const nuevos=raw.split(/[\s,;]+/).map(t=>t.trim()).filter(Boolean).map(t=>{const n=parseInt(t,10);return isNaN(n)||n<0||n>999?null:pad(n);}).filter(Boolean);
+    if(!nuevos.length){alert('No hay números válidos');return;}
+    // Eliminar viejos que no están en nuevos
+    abpaq.nums.forEach(k=>{if(!nuevos.includes(k))delete ABON[k];});
+    // Agregar nuevos que no estaban
+    nuevos.forEach(k=>{if(!ABON[k])ABON[k]={titular:abpaq.titular,abpaqId,confirmado:false};});
+    abpaq.nums=nuevos;
+    saveAndSync();renderAbonados();
+  },`<div class="modal-field"><label>Números actuales: ${abpaq.nums.join(', ')}</label></div>
+     <div class="modal-field"><label>Nuevos números (separados por coma)</label><textarea id="edit-abpaq-nums" class="num-input-area" rows="2" style="width:100%">${abpaq.nums.join(', ')}</textarea></div>`,'Guardar');
+}
+function noConfirmarAbonado(k){
+  // Marcar como no participará en este sorteo, se conserva para el próximo
+  if(B[k]){
+    if(B[k].tipo==='paquete'){
+      const paq=PAQ.find(p=>p.id===B[k].paqId);
+      if(paq){paq.nums=paq.nums.filter(n=>n!==k);if(!paq.nums.length)PAQ.splice(PAQ.indexOf(paq),1);}
+    }
+    delete B[k];
+  }
+  if(ABON[k]){ABON[k].confirmado=false;ABON[k].noConfirmar=true;}
+  saveAndSync();renderAbonados();renderMapa();
+}
+
+
+function limpiarBusqueda(){
+  document.getElementById('num-buscar').value='';
+  document.getElementById('num-result').classList.remove('visible');
+}
+
+function toggleNumerosLibres(){
+  const panel=document.getElementById('panel-libres');
+  const btn=document.getElementById('btn-libres');
+  if(panel.style.display==='none'){
+    const libres=[];
+    for(let i=0;i<1000;i++){const k=pad(i);if(!B[k]&&!ABON[k])libres.push(k);}
+    document.getElementById('libres-titulo').textContent=`${libres.length} números disponibles`;
+    document.getElementById('libres-lista').innerHTML=libres.map(k=>`<span style="display:inline-flex;align-items:center;justify-content:center;padding:3px 7px;font-family:var(--mono);font-size:11px;border-radius:4px;background:var(--bg);border:1px solid var(--border);color:var(--text2);margin:2px">${k}</span>`).join('');
+    panel.style.display='block';btn.textContent='Ocultar libres';
+  } else {panel.style.display='none';btn.textContent='Ver números libres';}
+}
+
+function toggleFormVendedor(){
+  const f=document.getElementById('form-vendedor');
+  f.style.display=f.style.display==='none'?'block':'none';
+}
+
+function previewNumInd(){
+  const raw=document.getElementById('d-num').value.trim();
+  const el=document.getElementById('d-num-preview');
+  if(!raw){el.textContent='';return;}
+  const n=parseInt(raw,10);
+  if(isNaN(n)||n<0||n>999){el.innerHTML='<span style="color:var(--red)">Inválido</span>';return;}
+  const k=pad(n);
+  if(B[k]){
+    const b=B[k];const quien=b.tipo==='vendedor'?(V.find(v=>v.id===b.vid)||{nombre:'?'}).nombre:b.cliente;
+    el.innerHTML=`<span style="color:var(--red)">✗ Ocupado — ${quien}</span>`;
+  } else if(ABON[k]){
+    el.innerHTML=`<span style="color:var(--gold)">★ Abonado (${ABON[k].titular}) — disponible para asignar</span>`;
+  } else {
+    el.innerHTML=`<span style="color:var(--accent)">✓ Libre</span>`;
+  }
+}
+
+function agregarNumsABoleta(tipo,id){
+  if(tipo==='individual'){
+    const b=B[id];if(!b)return;
+    showModal(`Agregar números a boleta de ${b.cliente}`,'Los nuevos números se unirán como paquete.',()=>{
+      const raw=document.getElementById('add-nums-ind').value;
+      const items=parsearNums(raw);const ok=items.filter(i=>i.estado==='ok');
+      if(!ok.length){alert('No hay números válidos');return;}
+      const nums=[id,...ok.map(i=>i.k)];
+      const base=nums.length*prec();const total=Math.max(0,base-(b.descuento||0));
+      const paqId=Date.now().toString();
+      PAQ.push({id:paqId,cliente:b.cliente,nums,precioBase:base,descuento:b.descuento||0,total,pagado:b.pagado});
+      nums.forEach(k=>{B[k]={tipo:'paquete',cliente:b.cliente,paqId,pagado:b.pagado};});
+      if(ABI[id]&&ABI[id].length){ABP[paqId]=ABI[id];delete ABI[id];}
+      saveAndSync();renderDirectas();renderDinero();
+    },`<div class="modal-field"><label>Números a agregar (separados por coma)</label><textarea id="add-nums-ind" class="num-input-area" rows="2" style="width:100%"></textarea></div>`,'Agregar');
+  } else {
+    const paq=PAQ.find(p=>p.id===id);if(!paq)return;
+    showModal(`Agregar números a paquete de ${paq.cliente}`,'',()=>{
+      const raw=document.getElementById('add-nums-paq').value;
+      const items=parsearNums(raw);const ok=items.filter(i=>i.estado==='ok');
+      if(!ok.length){alert('No hay números válidos');return;}
+      ok.forEach(({k})=>{B[k]={tipo:'paquete',cliente:paq.cliente,paqId:id,pagado:paq.pagado};paq.nums.push(k);});
+      paq.precioBase=paq.nums.length*prec();paq.total=Math.max(0,paq.precioBase-paq.descuento);
+      saveAndSync();renderDirectas();renderDinero();
+    },`<div class="modal-field"><label>Números a agregar</label><textarea id="add-nums-paq" class="num-input-area" rows="2" style="width:100%"></textarea></div>`,'Agregar');
+  }
+}
+
+function reasignarSel(){
+  if(!sel.size){alert('Selecciona números primero');return;}
+  const vid=vsGetSelected('reasig');if(!vid){alert('Elige el vendedor destino');return;}
+  const v=V.find(v=>v.id===vid);
+  const noVend=[...sel].filter(k=>!B[k]||B[k].tipo!=='vendedor');
+  if(noVend.length){alert('Solo puedes reasignar números de vendedores');return;}
+  showModal('Reasignar números',`¿Mover ${sel.size} número(s) a ${v.nombre}?`,()=>{
+    sel.forEach(k=>{if(B[k]&&B[k].tipo==='vendedor')B[k]={tipo:'vendedor',vid,pagado:false};});
+    saveAndSync();sel.clear();
+    const rc=document.getElementById('reasig-count');if(rc)rc.textContent=0;
+    renderMapa();renderVendedores();
+  });
+}
+
+function gestionarNumsVendedor(vid){
+  const v=V.find(v=>v.id===vid);if(!v)return;
+  showModal(`Asignar números a ${v.nombre}`,'',()=>{
+    const raw=document.getElementById('gv-nums').value;
+    const items=parsearNums(raw);const ok=items.filter(i=>i.estado==='ok');
+    if(!ok.length){alert('No hay números válidos disponibles');return;}
+    ok.forEach(({k})=>{B[k]={tipo:'vendedor',vid,pagado:false};});
+    saveAndSync();renderVendedores();renderMapa();
+  },`<div class="modal-field"><label>Números a asignar (separados por coma)</label><textarea id="gv-nums" class="num-input-area" rows="3" style="width:100%" placeholder="Ej: 001, 025, 300"></textarea></div><p style="font-size:12px;color:var(--text2)">Para desasignar o reasignar usa el Mapa.</p>`,'Asignar');
+}
+
+// Abonos rápido (público)
+function renderAbonosRapido(){
+  const buscar=(document.getElementById('rapido-buscar')||{}).value?.toLowerCase()||'';
+  const cont=document.getElementById('abonos-rapido-lista');
+  // Dinero pendiente por entregar: TODOS los abonos pendientes sin importar fecha
+  // Usar String() para evitar problemas de tipo entre claves numéricas y string
+  const _abonosPendV=V.flatMap(v=>(ABV[v.id]||ABV[String(v.id)]||[]).filter(a=>a.pendiente));
+  const _abonosPendI=Object.values(ABI).flat().filter(a=>a.pendiente);
+  const _abonosPendP=Object.values(ABP).flat().filter(a=>a.pendiente);
+  const abonosPend=[..._abonosPendV,..._abonosPendI,..._abonosPendP];
+  const totalEfectivo=abonosPend.filter(a=>a.nota==='Efectivo').reduce((s,a)=>s+a.monto,0);
+  const totalBizum=abonosPend.filter(a=>a.nota==='Bizum').reduce((s,a)=>s+a.monto,0);
+  const totalHoy=totalEfectivo+totalBizum;
+  const el=document.getElementById('total-hoy');if(el)el.textContent=fmt(totalHoy);
+  const elEf=document.getElementById('total-hoy-efectivo');if(elEf)elEf.textContent=fmt(totalEfectivo);
+  const elBz=document.getElementById('total-hoy-bizum');if(elBz)elBz.textContent=fmt(totalBizum);
+  // Construir lista: vendedores + individuales + paquetes
+  let items=[];
+  sortV(V).forEach(v=>{
+    const{neto}=netoV(v);
+    const ab=(ABV[v.id]||[]).filter(a=>!a.pendiente).reduce((s,a)=>s+a.monto,0);
+    items.push({tipo:'v',id:v.id,nombre:v.nombre,sub:v.telefono||'',saldo:Math.max(0,neto-ab)});
+  });
+  Object.entries(B).filter(([,b])=>b.tipo==='individual').sort(([,a],[,b])=>a.cliente.localeCompare(b.cliente)).forEach(([k,b])=>{
+    const total=prec()-(b.descuento||0);
+    const ab=(ABI[k]||[]).filter(a=>!a.pendiente).reduce((s,a)=>s+a.monto,0);
+    items.push({tipo:'i',id:k,nombre:b.cliente,sub:`Boleta ${k}`,saldo:Math.max(0,total-ab)});
+  });
+  [...PAQ].sort((a,b)=>a.cliente.localeCompare(b.cliente)).forEach(p=>{
+    const ab=(ABP[p.id]||[]).filter(a=>!a.pendiente).reduce((s,a)=>s+a.monto,0);
+    items.push({tipo:'p',id:p.id,nombre:p.cliente,sub:`Paquete ×${p.nums.length}`,saldo:Math.max(0,p.total-ab)});
+  });
+  if(buscar)items=items.filter(i=>i.nombre.toLowerCase().includes(buscar)||i.sub.toLowerCase().includes(buscar));
+  if(!items.length){cont.innerHTML='<div class="empty">Sin resultados</div>';return;}
+  cont.innerHTML=items.map(it=>`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:.9rem 1.25rem;margin-bottom:.6rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-weight:700;font-size:14px">${it.nombre}</div>
+        ${it.sub?`<div style="font-size:11px;color:var(--text2);font-family:var(--mono)">${it.sub}</div>`:''}
+        <div style="font-size:12px;font-family:var(--mono);margin-top:3px">Saldo: <strong style="color:${it.saldo<=0?'var(--accent)':'var(--amber)'}">${it.saldo<=0?'Al día ✓':fmt(it.saldo)}</strong></div>
+      </div>
+      <button class="btn btn-g btn-sm" onclick="registrarAbonoRapido('${it.tipo}','${String(it.id)}','${it.nombre.replace(/'/g,"\'").replace(/`/g,"'")}')">Registrar abono</button>
+    </div>`).join('');
+}
+function registrarAbonoRapido(tipo,id,nombre){
+  showModal(`Registrar abono — ${nombre}`,'Este abono quedará pendiente de confirmación por el administrador.',()=>{
+    const monto=parseFloat(document.getElementById('rapido-monto').value);
+    if(isNaN(monto)||monto<=0){alert('Monto inválido');return;}
+    const nota=document.getElementById('rapido-nota').value.trim();
+    const abono={id:Date.now().toString(),monto,nota,fecha:today(),pendiente:true};
+    if(tipo==='v'){const key=String(id);if(!ABV[key])ABV[key]=[];ABV[key].push(abono);}
+    else if(tipo==='i'){if(!ABI[id])ABI[id]=[];ABI[id].push(abono);}
+    else if(tipo==='p'){if(!ABP[id])ABP[id]=[];ABP[id].push(abono);}
+    saveAndSync();renderAbonosRapido();
+  },`<div class="modal-field"><label>Monto (€)</label><input id="rapido-monto" type="number" min="0" placeholder="0,00"></div>
+     <div class="modal-field"><label>Método de pago</label><select id="rapido-nota" style="width:100%"><option value="Efectivo">Efectivo</option><option value="Bizum">Bizum</option></select></div>`,'Registrar');
+}
+
+// renderPendientesConfirmacion definida arriba
+// confirmarAbonoP definida arriba
+// rechazarAbonoP definida arriba
+
+// Historial de abonos
+function renderHistorial(){
+  const buscar=(document.getElementById('hist-buscar')||{}).value?.toLowerCase()||'';
+  const tipo=(document.getElementById('hist-tipo')||{}).value||'';
+  const cont=document.getElementById('historial-lista');
+  let todos=[];
+  if(!tipo||tipo==='v'){
+    V.forEach(v=>{(ABV[v.id]||[]).filter(a=>!a.pendiente).forEach(a=>{todos.push({fecha:a.fecha,nombre:v.nombre,tipo:'Vendedor',monto:a.monto,nota:a.nota||''});});});
+  }
+  if(!tipo||tipo==='i'){
+    Object.entries(B).filter(([,b])=>b.tipo==='individual').forEach(([k,b])=>{
+      (ABI[k]||[]).forEach(a=>{todos.push({fecha:a.fecha,nombre:b.cliente,tipo:`Individual (${k})`,monto:a.monto,nota:a.nota||''});});
+    });
+  }
+  if(!tipo||tipo==='p'){
+    PAQ.forEach(p=>{(ABP[p.id]||[]).forEach(a=>{todos.push({fecha:a.fecha,nombre:p.cliente,tipo:'Paquete',monto:a.monto,nota:a.nota||''});});});
+  }
+  if(buscar)todos=todos.filter(t=>t.nombre.toLowerCase().includes(buscar));
+  todos.sort((a,b)=>{
+    const fa=a.fecha.split('/').reverse().join('');
+    const fb=b.fecha.split('/').reverse().join('');
+    if(fb!==fa)return fb.localeCompare(fa);
+    return a.nombre.localeCompare(b.nombre);
+  });
+  if(!todos.length){cont.innerHTML='<div class="empty">Sin abonos registrados</div>';return;}
+  const grupos={};todos.forEach(t=>{if(!grupos[t.fecha])grupos[t.fecha]=[];grupos[t.fecha].push(t);});
+  cont.innerHTML=Object.entries(grupos).map(([fecha,items])=>{
+    const total=items.reduce((a,x)=>a+x.monto,0);
+    return`<div class="card" style="margin-bottom:.75rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <span style="font-weight:700;font-family:var(--mono)">${fecha}</span>
+        <span style="font-family:var(--mono);color:var(--accent);font-weight:700">${fmt(total)}</span>
+      </div>
+      <table><thead><tr><th>Nombre</th><th>Tipo</th><th>Monto</th><th>Nota</th></tr></thead>
+      <tbody>${items.map(t=>`<tr>
+        <td style="font-weight:600">${t.nombre}</td>
+        <td style="font-size:11px;color:var(--text2)">${t.tipo}</td>
+        <td style="font-family:var(--mono);font-weight:700">${fmt(t.monto)}</td>
+        <td style="color:var(--text2);font-size:12px">${t.nota||'—'}</td>
+      </tr>`).join('')}</tbody></table>
+    </div>`;
+  }).join('');
+}
+
+// Nombre JSON con fecha y hora
+// ═══════════════════════════════ INIT
+applyProfile();
+refreshSelects();
+// Cargar desde la nube al inicio, luego renderizar
+// Pequeño retraso para asegurar que el navegador esté listo para fetch externo
+setTimeout(()=>{
+  syncLoad().then(()=>{ refreshSelects(); renderDash(); applyProfile(); });
+}, 800);
+
+</script>
+</body>
+</html>

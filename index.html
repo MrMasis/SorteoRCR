@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema de Sorteo</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root {
   --bg:#f5f3ee; --surface:#fff; --surface2:#edeae3; --border:#d8d3c8; --border2:#c8c2b5;
@@ -441,10 +442,13 @@ tbody tr:hover td{background:var(--bg)}
 
 <!-- ══════════════════════ DINERO POR RECOGER -->
 <div id="tab-dinero" class="section">
-  <div class="subtab-row">
-    <button class="subtab active" onclick="goDineroTab('vendedores',this)">Vendedores</button>
-    <button class="subtab" onclick="goDineroTab('paquetes',this)">Paquetes</button>
-    <button class="subtab" onclick="goDineroTab('individuales',this)">Individuales</button>
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px">
+    <div class="subtab-row" style="margin-bottom:0">
+      <button class="subtab active" onclick="goDineroTab('vendedores',this)">Vendedores</button>
+      <button class="subtab" onclick="goDineroTab('paquetes',this)">Paquetes</button>
+      <button class="subtab" onclick="goDineroTab('individuales',this)">Individuales</button>
+    </div>
+    <button class="btn btn-g btn-sm" onclick="exportarExcelDinero()" style="white-space:nowrap">📊 Exportar Excel</button>
   </div>
   <div class="search-bar">
     <input id="dinero-buscar" placeholder="Buscar por nombre..." oninput="renderDinero()">
@@ -2240,6 +2244,86 @@ function renderHistorial(){
       </tr>`).join('')}</tbody></table>
     </div>`;
   }).join('');
+}
+
+// ═══════════════════════════════ EXPORTAR EXCEL DINERO
+function exportarExcelDinero(){
+  if(typeof XLSX==='undefined'){alert('La librería de Excel no está cargada. Verifica tu conexión a internet.');return;}
+
+  const fmtN = n => Number(n).toFixed(2);
+
+  // ── Hoja 1: Vendedores ──────────────────────────────────────────────────
+  const hdrsV = ['Vendedor','Teléfono','Boletas asignadas','Neto a entregar (€)','Total abonado (€)','Saldo pendiente (€)'];
+  const rowsV = sortV(V).map(v => {
+    const {neto, count} = netoV(v);
+    const ab = (ABV[v.id]||[]).filter(x=>!x.pendiente).reduce((a,x)=>a+x.monto,0);
+    const saldo = Math.max(0, neto - ab);
+    return [v.nombre, v.telefono||'', count, fmtN(neto), fmtN(ab), fmtN(saldo)];
+  });
+  const totV_neto  = rowsV.reduce((a,r)=>a+parseFloat(r[3]),0);
+  const totV_ab    = rowsV.reduce((a,r)=>a+parseFloat(r[4]),0);
+  const totV_saldo = rowsV.reduce((a,r)=>a+parseFloat(r[5]),0);
+  rowsV.push(['','','TOTAL',fmtN(totV_neto),fmtN(totV_ab),fmtN(totV_saldo)]);
+  const wsV = XLSX.utils.aoa_to_sheet([hdrsV, ...rowsV]);
+
+  // ── Hoja 2: Paquetes ────────────────────────────────────────────────────
+  const hdrsP = ['Cliente','Números','Cantidad','Precio base (€)','Descuento (€)','Total (€)','Total abonado (€)','Saldo pendiente (€)'];
+  const rowsP = [...PAQ].sort((a,b)=>a.cliente.localeCompare(b.cliente)).map(p => {
+    const ab = (ABP[p.id]||[]).filter(x=>!x.pendiente).reduce((a,x)=>a+x.monto,0);
+    const saldo = Math.max(0, p.total - ab);
+    return [p.cliente, p.nums.join(', '), p.nums.length, fmtN(p.precioBase), fmtN(p.descuento||0), fmtN(p.total), fmtN(ab), fmtN(saldo)];
+  });
+  const totP_base  = rowsP.reduce((a,r)=>a+parseFloat(r[3]),0);
+  const totP_desc  = rowsP.reduce((a,r)=>a+parseFloat(r[4]),0);
+  const totP_tot   = rowsP.reduce((a,r)=>a+parseFloat(r[5]),0);
+  const totP_ab    = rowsP.reduce((a,r)=>a+parseFloat(r[6]),0);
+  const totP_saldo = rowsP.reduce((a,r)=>a+parseFloat(r[7]),0);
+  rowsP.push(['','','TOTAL',fmtN(totP_base),fmtN(totP_desc),fmtN(totP_tot),fmtN(totP_ab),fmtN(totP_saldo)]);
+  const wsP = XLSX.utils.aoa_to_sheet([hdrsP, ...rowsP]);
+
+  // ── Hoja 3: Individuales ────────────────────────────────────────────────
+  const hdrsI = ['Número','Cliente','Precio base (€)','Descuento (€)','Total (€)','Total abonado (€)','Saldo pendiente (€)'];
+  const rowsI = Object.entries(B)
+    .filter(([,b])=>b.tipo==='individual')
+    .sort(([,a],[,b])=>a.cliente.localeCompare(b.cliente))
+    .map(([k,b])=>{
+      const total = prec() - (b.descuento||0);
+      const ab    = (ABI[k]||[]).filter(x=>!x.pendiente).reduce((a,x)=>a+x.monto,0);
+      const saldo = Math.max(0, total - ab);
+      return [k, b.cliente, fmtN(prec()), fmtN(b.descuento||0), fmtN(total), fmtN(ab), fmtN(saldo)];
+    });
+  const totI_base  = rowsI.reduce((a,r)=>a+parseFloat(r[2]),0);
+  const totI_desc  = rowsI.reduce((a,r)=>a+parseFloat(r[3]),0);
+  const totI_tot   = rowsI.reduce((a,r)=>a+parseFloat(r[4]),0);
+  const totI_ab    = rowsI.reduce((a,r)=>a+parseFloat(r[5]),0);
+  const totI_saldo = rowsI.reduce((a,r)=>a+parseFloat(r[6]),0);
+  rowsI.push(['','TOTAL',fmtN(totI_base),fmtN(totI_desc),fmtN(totI_tot),fmtN(totI_ab),fmtN(totI_saldo)]);
+  const wsI = XLSX.utils.aoa_to_sheet([hdrsI, ...rowsI]);
+
+  // ── Hoja 4: Resumen general ─────────────────────────────────────────────
+  const hdrsR = ['Concepto','Neto total (€)','Total abonado (€)','Saldo pendiente (€)'];
+  const rowsR = [
+    ['Vendedores',    fmtN(totV_neto),  fmtN(totV_ab),    fmtN(totV_saldo)],
+    ['Paquetes RC&R', fmtN(totP_tot),   fmtN(totP_ab),    fmtN(totP_saldo)],
+    ['Individuales',  fmtN(totI_tot),   fmtN(totI_ab),    fmtN(totI_saldo)],
+    ['TOTAL GLOBAL',
+      fmtN(totV_neto + totP_tot + totI_tot),
+      fmtN(totV_ab   + totP_ab  + totI_ab),
+      fmtN(totV_saldo+ totP_saldo+totI_saldo)
+    ]
+  ];
+  const wsR = XLSX.utils.aoa_to_sheet([hdrsR, ...rowsR]);
+
+  // ── Construir libro y descargar ─────────────────────────────────────────
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, wsR, 'Resumen');
+  XLSX.utils.book_append_sheet(wb, wsV, 'Vendedores');
+  XLSX.utils.book_append_sheet(wb, wsP, 'Paquetes');
+  XLSX.utils.book_append_sheet(wb, wsI, 'Individuales');
+
+  const fecha = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
+  XLSX.writeFile(wb, `Dinero_por_recoger_${CFG.nombre||'Sorteo'}_${fecha}.xlsx`);
+  showToast('✓ Excel exportado correctamente');
 }
 
 // Nombre JSON con fecha y hora

@@ -2252,37 +2252,30 @@ function exportarExcelDinero(){
 
   const fmtN = n => Number(n).toFixed(2);
 
+  const hdrs = ['Nombre', 'Saldo pendiente (€)'];
+
   // ── Hoja 1: Vendedores ──────────────────────────────────────────────────
-  const hdrsV = ['Vendedor','Teléfono','Boletas asignadas','Neto a entregar (€)','Total abonado (€)','Saldo pendiente (€)'];
   const rowsV = sortV(V).map(v => {
-    const {neto, count} = netoV(v);
+    const {neto} = netoV(v);
     const ab = (ABV[v.id]||[]).filter(x=>!x.pendiente).reduce((a,x)=>a+x.monto,0);
     const saldo = Math.max(0, neto - ab);
-    return [v.nombre, v.telefono||'', count, fmtN(neto), fmtN(ab), fmtN(saldo)];
-  });
-  const totV_neto  = rowsV.reduce((a,r)=>a+parseFloat(r[3]),0);
-  const totV_ab    = rowsV.reduce((a,r)=>a+parseFloat(r[4]),0);
-  const totV_saldo = rowsV.reduce((a,r)=>a+parseFloat(r[5]),0);
-  rowsV.push(['','','TOTAL',fmtN(totV_neto),fmtN(totV_ab),fmtN(totV_saldo)]);
-  const wsV = XLSX.utils.aoa_to_sheet([hdrsV, ...rowsV]);
+    return saldo > 0 ? [v.nombre, fmtN(saldo)] : null;
+  }).filter(Boolean);
+  const totV = rowsV.reduce((a,r)=>a+parseFloat(r[1]),0);
+  rowsV.push(['TOTAL', fmtN(totV)]);
+  const wsV = XLSX.utils.aoa_to_sheet([hdrs, ...rowsV]);
 
   // ── Hoja 2: Paquetes ────────────────────────────────────────────────────
-  const hdrsP = ['Cliente','Números','Cantidad','Precio base (€)','Descuento (€)','Total (€)','Total abonado (€)','Saldo pendiente (€)'];
   const rowsP = [...PAQ].sort((a,b)=>a.cliente.localeCompare(b.cliente)).map(p => {
     const ab = (ABP[p.id]||[]).filter(x=>!x.pendiente).reduce((a,x)=>a+x.monto,0);
     const saldo = Math.max(0, p.total - ab);
-    return [p.cliente, p.nums.join(', '), p.nums.length, fmtN(p.precioBase), fmtN(p.descuento||0), fmtN(p.total), fmtN(ab), fmtN(saldo)];
-  });
-  const totP_base  = rowsP.reduce((a,r)=>a+parseFloat(r[3]),0);
-  const totP_desc  = rowsP.reduce((a,r)=>a+parseFloat(r[4]),0);
-  const totP_tot   = rowsP.reduce((a,r)=>a+parseFloat(r[5]),0);
-  const totP_ab    = rowsP.reduce((a,r)=>a+parseFloat(r[6]),0);
-  const totP_saldo = rowsP.reduce((a,r)=>a+parseFloat(r[7]),0);
-  rowsP.push(['','','TOTAL',fmtN(totP_base),fmtN(totP_desc),fmtN(totP_tot),fmtN(totP_ab),fmtN(totP_saldo)]);
-  const wsP = XLSX.utils.aoa_to_sheet([hdrsP, ...rowsP]);
+    return saldo > 0 ? [p.cliente, fmtN(saldo)] : null;
+  }).filter(Boolean);
+  const totP = rowsP.reduce((a,r)=>a+parseFloat(r[1]),0);
+  rowsP.push(['TOTAL', fmtN(totP)]);
+  const wsP = XLSX.utils.aoa_to_sheet([hdrs, ...rowsP]);
 
   // ── Hoja 3: Individuales ────────────────────────────────────────────────
-  const hdrsI = ['Número','Cliente','Precio base (€)','Descuento (€)','Total (€)','Total abonado (€)','Saldo pendiente (€)'];
   const rowsI = Object.entries(B)
     .filter(([,b])=>b.tipo==='individual')
     .sort(([,a],[,b])=>a.cliente.localeCompare(b.cliente))
@@ -2290,29 +2283,20 @@ function exportarExcelDinero(){
       const total = prec() - (b.descuento||0);
       const ab    = (ABI[k]||[]).filter(x=>!x.pendiente).reduce((a,x)=>a+x.monto,0);
       const saldo = Math.max(0, total - ab);
-      return [k, b.cliente, fmtN(prec()), fmtN(b.descuento||0), fmtN(total), fmtN(ab), fmtN(saldo)];
-    });
-  const totI_base  = rowsI.reduce((a,r)=>a+parseFloat(r[2]),0);
-  const totI_desc  = rowsI.reduce((a,r)=>a+parseFloat(r[3]),0);
-  const totI_tot   = rowsI.reduce((a,r)=>a+parseFloat(r[4]),0);
-  const totI_ab    = rowsI.reduce((a,r)=>a+parseFloat(r[5]),0);
-  const totI_saldo = rowsI.reduce((a,r)=>a+parseFloat(r[6]),0);
-  rowsI.push(['','TOTAL',fmtN(totI_base),fmtN(totI_desc),fmtN(totI_tot),fmtN(totI_ab),fmtN(totI_saldo)]);
-  const wsI = XLSX.utils.aoa_to_sheet([hdrsI, ...rowsI]);
+      return saldo > 0 ? [b.cliente, fmtN(saldo)] : null;
+    }).filter(Boolean);
+  const totI = rowsI.reduce((a,r)=>a+parseFloat(r[1]),0);
+  rowsI.push(['TOTAL', fmtN(totI)]);
+  const wsI = XLSX.utils.aoa_to_sheet([hdrs, ...rowsI]);
 
   // ── Hoja 4: Resumen general ─────────────────────────────────────────────
-  const hdrsR = ['Concepto','Neto total (€)','Total abonado (€)','Saldo pendiente (€)'];
-  const rowsR = [
-    ['Vendedores',    fmtN(totV_neto),  fmtN(totV_ab),    fmtN(totV_saldo)],
-    ['Paquetes RC&R', fmtN(totP_tot),   fmtN(totP_ab),    fmtN(totP_saldo)],
-    ['Individuales',  fmtN(totI_tot),   fmtN(totI_ab),    fmtN(totI_saldo)],
-    ['TOTAL GLOBAL',
-      fmtN(totV_neto + totP_tot + totI_tot),
-      fmtN(totV_ab   + totP_ab  + totI_ab),
-      fmtN(totV_saldo+ totP_saldo+totI_saldo)
-    ]
-  ];
-  const wsR = XLSX.utils.aoa_to_sheet([hdrsR, ...rowsR]);
+  const wsR = XLSX.utils.aoa_to_sheet([
+    ['Concepto', 'Saldo pendiente (€)'],
+    ['Vendedores',    fmtN(totV)],
+    ['Paquetes RC&R', fmtN(totP)],
+    ['Individuales',  fmtN(totI)],
+    ['TOTAL GLOBAL',  fmtN(totV + totP + totI)]
+  ]);
 
   // ── Construir libro y descargar ─────────────────────────────────────────
   const wb = XLSX.utils.book_new();

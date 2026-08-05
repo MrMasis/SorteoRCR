@@ -269,9 +269,6 @@ tbody tr:hover td{background:var(--bg)}
         <div class="mode-bar">
           <button class="mode-btn active" id="mode-asig" onclick="setMode('asignar')">Asignar</button>
           <button class="mode-btn m-del" id="mode-del" onclick="setMode('desasignar')">Desasignar</button>
-          <button class="mode-btn" id="mode-reasig" onclick="setMode('reasignar')">Reasignar</button>
-        <button class="mode-btn" id="mode-pago" onclick="setMode('pago')">Cambiar pago</button>
-          <button class="mode-btn m-gold" id="mode-gold" onclick="setMode('abonado')">Marcar abonado</button>
         </div>
       </div>
       <div id="toolbar-asig" style="padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)">
@@ -319,33 +316,25 @@ tbody tr:hover td{background:var(--bg)}
         </div>
       </div>
       <div id="toolbar-del" style="display:none;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)">
-        <p style="font-size:12px;color:var(--red);font-weight:600;margin-bottom:6px">Modo desasignar — clic en números asignados. Los abonados no se pueden desasignar aquí.</p>
-        <div class="fr">
-          <button class="btn btn-warn" onclick="desasignarSel()">Desasignar (<span id="del-count">0</span>)</button>
+        <p style="font-size:12px;color:var(--red);font-weight:600;margin-bottom:6px">Modo desasignar — clic en números asignados para seleccionarlos, o usa el bloque de texto.</p>
+        <div class="fr" style="margin-bottom:12px">
+          <button class="btn btn-warn" onclick="desasignarSel()">Desasignar selección (<span id="del-count">0</span>)</button>
           <button class="btn" onclick="clearSel()">Cancelar</button>
         </div>
-      </div>
-      <div id="toolbar-reasig" style="display:none;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)">
-        <p style="font-size:12px;color:var(--blue);font-weight:600;margin-bottom:6px">Modo reasignar — selecciona números de un vendedor para moverlos a otro.</p>
-        <div class="fr">
-          <div class="vs-wrap" id="vs-reasig-wrap" style="min-width:180px">
-            <input class="vs-input" id="vs-reasig-input" placeholder="Reasignar a vendedor..." autocomplete="off" oninput="vsFilter(&apos;reasig&apos;)" onfocus="vsOpen(&apos;reasig&apos;)" onblur="setTimeout(()=>vsClose(&apos;reasig&apos;),150)">
-            <div class="vs-dropdown" id="vs-reasig-drop"></div>
+        <div style="padding-top:10px;border-top:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Desasignación en bloque por texto</div>
+          <div class="fr" style="align-items:flex-start">
+            <div style="flex:1;min-width:200px">
+              <textarea id="texto-desal-nums" class="num-input-area" rows="3" placeholder="Números separados por comas, espacios o saltos&#10;Ej: 057, 159, 267, 845, 952" oninput="previewTextoDesal()" style="width:100%"></textarea>
+              <div class="num-preview" id="texto-desal-preview"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;min-width:160px">
+              <button class="btn btn-warn" onclick="confirmarTextoDesal()" style="width:100%">Desasignar en bloque</button>
+            </div>
           </div>
-          <button class="btn btn-p" onclick="reasignarSel()">Reasignar (<span id="reasig-count">0</span>)</button>
-          <button class="btn" onclick="clearSel()">Cancelar</button>
         </div>
       </div>
-      <div id="toolbar-pago" style="display:none;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)">
-        <p style="font-size:12px;color:var(--text2)">Modo pago — clic en cualquier número asignado para cambiar su estado.</p>
-      </div>
-      <div id="toolbar-gold" style="display:none;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)">
-        <p style="font-size:12px;color:var(--gold);font-weight:600;margin-bottom:6px">Modo abonado — selecciona números libres para marcarlos como abonados permanentes.</p>
-        <div class="fr">
-          <button class="btn btn-gold" onclick="confirmarAbonados()">Marcar abonados (<span id="gold-count">0</span>)</button>
-          <button class="btn" onclick="clearSel()">Cancelar</button>
-        </div>
-      </div>
+
       <div class="legend">
         <div class="leg"><div class="leg-dot" style="background:var(--gold-bg);border:1px solid #c8a830"></div>Abonado</div>
         <div class="leg"><div class="leg-dot" style="background:var(--accent-bg);border:1px solid #aacab6"></div>Pagado</div>
@@ -875,6 +864,7 @@ function vendedorCardHtml(v){
         </div>
         ${isAdmin?`<button class="btn btn-sm" onclick="editarVendedor(${v.id})">Editar</button>
         <button class="btn btn-sm" onclick="gestionarNumsVendedor(${v.id})">+ Números</button>
+        <button class="btn btn-sm btn-warn" onclick="limpiarNumerosVendedor(${v.id})">Limpiar números</button>
         <button class="btn btn-sm btn-d" onclick="removeV(${v.id})">Eliminar</button>`:''}
       </div>
     </div>
@@ -919,6 +909,7 @@ function renderVendedores(){
           <span style="font-family:var(--mono);font-size:12px;opacity:.7">${totalBoletas} boletas · Neto grupo: ${fmt(totalNeto)}</span>
           ${isAdmin?`<button class="btn btn-sm" style="background:transparent;color:var(--bg);border-color:rgba(255,255,255,.3)" onclick="editarVendedor(${socio.id})">Editar</button>
           <button class="btn btn-sm" style="background:transparent;color:var(--bg);border-color:rgba(255,255,255,.3)" onclick="gestionarNumsVendedor(${socio.id})">+ Números</button>
+          <button class="btn btn-sm" style="background:var(--red);color:#fff;border-color:var(--red)" onclick="limpiarNumerosVendedor(${socio.id})">Limpiar números</button>
           <button class="btn btn-sm btn-d" style="color:#f5dddd;border-color:rgba(255,100,100,.4)" onclick="removeV(${socio.id})">Eliminar</button>`:''}
         </div>
       </div>
@@ -1312,13 +1303,10 @@ function renderAbonados(){
 // ═══════════════════════════════ MAPA
 function setMode(m){
   mapaMode=m;sel.clear();
-  ['asig','del','reasig','pago','gold'].forEach(id=>{const el2=document.getElementById('mode-'+id);if(el2)el2.classList.remove('active');});
-  const modeEl=document.getElementById({asignar:'mode-asig',desasignar:'mode-del',reasignar:'mode-reasig',pago:'mode-pago',abonado:'mode-gold'}[m]);if(modeEl)modeEl.classList.add('active');
+  ['asig','del'].forEach(id=>{const el2=document.getElementById('mode-'+id);if(el2)el2.classList.remove('active');});
+  const modeEl=document.getElementById({asignar:'mode-asig',desasignar:'mode-del'}[m]);if(modeEl)modeEl.classList.add('active');
   document.getElementById('toolbar-asig').style.display=m==='asignar'?'block':'none';
   document.getElementById('toolbar-del').style.display=m==='desasignar'?'block':'none';
-  const trEl=document.getElementById('toolbar-reasig');if(trEl)trEl.style.display=m==='reasignar'?'block':'none';
-  document.getElementById('toolbar-pago').style.display=m==='pago'?'block':'none';
-  document.getElementById('toolbar-gold').style.display=m==='abonado'?'block':'none';
   renderMapa();
 }
 function toggleMapaAsigTipo(){
@@ -2115,17 +2103,43 @@ function agregarNumsABoleta(tipo,id){
   }
 }
 
-function reasignarSel(){
-  if(!sel.size){alert('Selecciona números primero');return;}
-  const vid=vsGetSelected('reasig');if(!vid){alert('Elige el vendedor destino');return;}
-  const v=V.find(v=>v.id===vid);
-  const noVend=[...sel].filter(k=>!B[k]||B[k].tipo!=='vendedor');
-  if(noVend.length){alert('Solo puedes reasignar números de vendedores');return;}
-  showModal('Reasignar números',`¿Mover ${sel.size} número(s) a ${v.nombre}?`,()=>{
-    sel.forEach(k=>{if(B[k]&&B[k].tipo==='vendedor')B[k]={tipo:'vendedor',vid,pagado:false};});
-    saveAndSync();sel.clear();
-    const rc=document.getElementById('reasig-count');if(rc)rc.textContent=0;
-    renderMapa();renderVendedores();
+function limpiarNumerosVendedor(vid){
+  const v=V.find(v=>v.id===vid);if(!v)return;
+  const nums=Object.entries(B).filter(([,b])=>b.tipo==='vendedor'&&b.vid===vid);
+  if(!nums.length){showToast('Este vendedor no tiene números asignados');return;}
+  showModal('Limpiar números',`¿Liberar los ${nums.length} número(s) de ${v.nombre}? El vendedor no se eliminará.`,()=>{
+    nums.forEach(([k])=>delete B[k]);
+    saveAndSync();renderVendedores();renderMapa();
+    showToast(`✓ ${nums.length} número(s) liberados de ${v.nombre}`);
+  });
+}
+
+function previewTextoDesal(){
+  const raw=document.getElementById('texto-desal-nums').value;
+  const prev=document.getElementById('texto-desal-preview');
+  if(!raw.trim()){prev.innerHTML='';return;}
+  const items=parsearNums(raw);
+  const asignados=items.filter(i=>B[i.k]);
+  const libres=items.filter(i=>i.estado==='ok'&&!B[i.k]);
+  const invalidos=items.filter(i=>i.estado!=='ok');
+  let html=`<span style="color:var(--red)">${asignados.length} a liberar</span>`;
+  if(libres.length)html+=` · <span style="color:var(--text3)">${libres.length} ya libres</span>`;
+  if(invalidos.length)html+=` · <span style="color:var(--text3)">${invalidos.length} inválidos</span>`;
+  prev.innerHTML=html;
+}
+
+function confirmarTextoDesal(){
+  const raw=document.getElementById('texto-desal-nums').value;
+  if(!raw.trim()){alert('Escribe los números a liberar');return;}
+  const items=parsearNums(raw);
+  const aLiberar=items.filter(i=>B[i.k]&&!ABON[i.k]);
+  if(!aLiberar.length){alert('No hay números asignados válidos para liberar (los abonados no se pueden liberar aquí)');return;}
+  showModal('Desasignar en bloque',`¿Liberar ${aLiberar.length} número(s)? Se quitarán de cualquier vendedor, paquete o individual al que estén asignados.`,()=>{
+    aLiberar.forEach(({k})=>delete B[k]);
+    document.getElementById('texto-desal-nums').value='';
+    document.getElementById('texto-desal-preview').innerHTML='';
+    saveAndSync();renderMapa();renderVendedores();
+    showToast(`✓ ${aLiberar.length} número(s) liberados`);
   });
 }
 

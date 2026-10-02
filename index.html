@@ -1016,19 +1016,50 @@ function addPaquete(){
 function editarMonto(tipo,id){
   if(tipo==='individual'){
     const b=B[id];
-    showModal('Editar monto',`Boleta ${id} — ${b.cliente}`,()=>{
+    showModal('Editar boleta',`Boleta ${id}`,()=>{
+      const nuevoNombre=(document.getElementById('edit-nombre-ind').value||'').trim();
+      if(nuevoNombre) B[id].cliente=nuevoNombre;
       B[id].descuento=parseFloat(document.getElementById('edit-desc').value)||0;
       saveAndSync();renderDirectas();renderDinero();
-    },`<div class="modal-field"><label>Precio base: ${fmt(prec())}</label></div>
+    },`<div class="modal-field"><label>Nombre del comprador</label><input id="edit-nombre-ind" type="text" value="${b.cliente||''}"></div>
+       <div class="modal-field"><label>Precio base: ${fmt(prec())}</label></div>
        <div class="modal-field"><label>Descuento (€)</label><input id="edit-desc" type="number" min="0" value="${b.descuento||0}"></div>`);
   } else {
     const paq=PAQ.find(p=>p.id===id);if(!paq)return;
-    showModal('Editar monto del paquete',`Paquete de ${paq.cliente}`,()=>{
+    const numsHTML=paq.nums.map(n=>`
+      <label style="display:flex;align-items:center;gap:8px;padding:3px 0;cursor:pointer">
+        <input type="checkbox" value="${n}" checked style="accent-color:var(--red)">
+        <span style="font-family:var(--mono);font-size:13px">${n}</span>
+      </label>`).join('');
+    showModal('Editar paquete',`Paquete de ${paq.cliente}`,()=>{
+      // Nombre
+      const nuevoNombre=(document.getElementById('edit-nombre-paq').value||'').trim();
+      if(nuevoNombre && nuevoNombre!==paq.cliente){
+        paq.nums.forEach(n=>{if(B[n])B[n].cliente=nuevoNombre;});
+        paq.cliente=nuevoNombre;
+      }
+      // Descuento
       const d=parseFloat(document.getElementById('edit-desc-paq').value)||0;
-      paq.descuento=d;paq.total=Math.max(0,paq.precioBase-d);
-      saveAndSync();renderDirectas();renderDinero();
-    },`<div class="modal-field"><label>Precio base: ${fmt(paq.precioBase)}</label></div>
-       <div class="modal-field"><label>Descuento (€)</label><input id="edit-desc-paq" type="number" min="0" value="${paq.descuento||0}"></div>`);
+      paq.descuento=d;
+      // Números a quitar (los desmarcados)
+      const checks=[...document.querySelectorAll('#edit-paq-nums input[type=checkbox]')];
+      const aQuitar=checks.filter(c=>!c.checked).map(c=>c.value);
+      if(aQuitar.length>0 && aQuitar.length<paq.nums.length){
+        aQuitar.forEach(n=>{delete B[n];paq.nums=paq.nums.filter(x=>x!==n);});
+        paq.precioBase=paq.nums.length*prec();
+      } else if(aQuitar.length===paq.nums.length){
+        alert('Debes dejar al menos un número en el paquete. Para eliminar el paquete completo usa el botón Eliminar.');
+        return;
+      }
+      paq.total=Math.max(0,paq.precioBase-paq.descuento);
+      saveAndSync();renderDirectas();renderDinero();renderMapa();
+    },`<div class="modal-field"><label>Nombre del comprador</label><input id="edit-nombre-paq" type="text" value="${paq.cliente||''}"></div>
+       <div class="modal-field"><label>Precio base: ${fmt(paq.precioBase)}</label></div>
+       <div class="modal-field"><label>Descuento (€)</label><input id="edit-desc-paq" type="number" min="0" value="${paq.descuento||0}"></div>
+       <div class="modal-field">
+         <label style="margin-bottom:6px;display:block">Números del paquete <span style="color:var(--text3);font-weight:400">(desmarca los que quieras liberar)</span></label>
+         <div id="edit-paq-nums" style="display:flex;flex-wrap:wrap;gap:0 16px;max-height:160px;overflow-y:auto;padding:6px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)">${numsHTML}</div>
+       </div>`);
   }
 }
 function agregarNumsPaquete(paqId){
@@ -2135,7 +2166,31 @@ function confirmarTextoDesal(){
   const aLiberar=items.filter(i=>B[i.k]&&!ABON[i.k]);
   if(!aLiberar.length){alert('No hay números asignados válidos para liberar (los abonados no se pueden liberar aquí)');return;}
   showModal('Desasignar en bloque',`¿Liberar ${aLiberar.length} número(s)? Se quitarán de cualquier vendedor, paquete o individual al que estén asignados.`,()=>{
-    aLiberar.forEach(({k})=>delete B[k]);
+    aLiberar.forEach(({k})=>{
+      const b=B[k];
+      if(!b) return;
+      if(b.tipo==='paquete'){
+        // Limpiar el número del paquete correspondiente
+        const pIdx=PAQ.findIndex(p=>p.id===b.paqId);
+        if(pIdx!==-1){
+          PAQ[pIdx].nums=PAQ[pIdx].nums.filter(n=>n!==k);
+          if(PAQ[pIdx].nums.length===0){
+            // Eliminar paquete vacío y sus abonos
+            const pid=PAQ[pIdx].id;
+            delete ABP[pid];
+            PAQ.splice(pIdx,1);
+          } else {
+            // Recalcular totales del paquete
+            PAQ[pIdx].precioBase=PAQ[pIdx].nums.length*prec();
+            PAQ[pIdx].total=Math.max(0,PAQ[pIdx].precioBase-(PAQ[pIdx].descuento||0));
+          }
+        }
+      } else if(b.tipo==='individual'){
+        // Limpiar abonos individuales asociados a este número
+        delete ABI[k];
+      }
+      delete B[k];
+    });
     document.getElementById('texto-desal-nums').value='';
     document.getElementById('texto-desal-preview').innerHTML='';
     saveAndSync();renderMapa();renderVendedores();
